@@ -1,0 +1,14 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Poly_Cafe.DAL\Poly_Cafe.DAL.csproj" />
+    <ProjectReference Include="..\Poly_Cafe.DTO\Poly_Cafe.DTO.csproj" />
+  </ItemGroup>
+
+</Project>

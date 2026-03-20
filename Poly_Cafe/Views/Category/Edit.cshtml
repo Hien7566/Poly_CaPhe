@@ -1,0 +1,24 @@
+﻿@model Poly_Cafe.DTO.CategoryDTO
+
+@{
+    ViewData["Title"] = "Sửa danh mục";
+}
+
+<h2>Sửa danh mục</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form asp-action="Edit" method="post">
+    <input type="hidden" name="id" value="@Model.Id" />
+    <div class="form-group">
+        <label>Tên danh mục</label>
+        <input type="text" name="name" value="@Model.Name" class="form-control" required />
+    </div>
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </div>
+</form>

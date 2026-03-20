@@ -1,0 +1,345 @@
+﻿@{
+    ViewData["Title"] = "Dashboard";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" />
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+<style>
+    /* Tổng quan Dashboard */
+    .dashboard-header {
+        margin-bottom: 30px;
+    }
+
+        .dashboard-header h1 {
+            font-size: 26px;
+            font-weight: 700;
+            color: #4a342e;
+            margin-bottom: 5px;
+        }
+
+        .dashboard-header .date {
+            color: #8d6e63;
+            font-weight: 500;
+        }
+
+    /* Stats Cards */
+    .stats-row {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .stat-card {
+        background: white;
+        padding: 25px;
+        border-radius: 20px;
+        display: flex;
+        align-items: center;
+        gap: 20px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        transition: transform 0.3s ease;
+    }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+        }
+
+    .stat-icon {
+        width: 55px;
+        height: 55px;
+        border-radius: 15px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+    }
+
+    /* Màu icon theo mẫu */
+    .bg-green {
+        background: #e8f5e9;
+        color: #2ecc71;
+    }
+
+    .bg-blue {
+        background: #e3f2fd;
+        color: #3498db;
+    }
+
+    .bg-red {
+        background: #ffebee;
+        color: #e74c3c;
+    }
+
+    .bg-brown {
+        background: #efebe9;
+        color: #8d6e63;
+    }
+
+    .stat-info h3 {
+        font-size: 14px;
+        color: #8d6e63;
+        margin-bottom: 8px;
+        font-weight: 500;
+    }
+
+    .stat-value {
+        font-size: 22px;
+        font-weight: 700;
+        color: #4a342e;
+    }
+
+    .trend {
+        font-size: 12px;
+        font-weight: 600;
+        margin-top: 5px;
+        display: block;
+    }
+
+        .trend.up {
+            color: #2ecc71;
+        }
+
+    .badge {
+        padding: 4px 10px;
+        border-radius: 8px;
+        font-size: 11px;
+        font-weight: 700;
+        text-transform: uppercase;
+    }
+
+        .badge.urgent {
+            background: #ffebee;
+            color: #e74c3c;
+        }
+
+        .badge.online {
+            background: #e3f2fd;
+            color: #3498db;
+        }
+
+    /* Charts Row */
+    .charts-row {
+        display: grid;
+        grid-template-columns: 2fr 1fr;
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+
+    .chart-card {
+        background: white;
+        padding: 25px;
+        border-radius: 24px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+    }
+
+        .chart-card h3 {
+            font-size: 18px;
+            color: #4a342e;
+            margin-bottom: 20px;
+            font-weight: 700;
+        }
+
+    /* Alerts */
+    .alert-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px;
+        background: #fffcf8;
+        border: 1px solid #f3e5f5;
+        border-radius: 15px;
+        margin-bottom: 10px;
+    }
+
+    .product-name {
+        font-weight: 600;
+        color: #4a342e;
+    }
+
+    .restock-btn {
+        background: #4a342e;
+        color: white;
+        border: none;
+        padding: 8px 15px;
+        border-radius: 10px;
+        font-size: 12px;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+        .restock-btn:hover {
+            background: #5d443b;
+        }
+
+    .full-width {
+        grid-column: span 2;
+    }
+</style>
+
+<div class="dashboard-container">
+    <div class="dashboard-header">
+        <h1>Welcome back!</h1>
+        <p class="date">Friday, November 28, 2025</p>
+    </div>
+
+    <div class="stats-row">
+        <div class="stat-card">
+            <div class="stat-icon bg-green"><i class="fas fa-dollar-sign"></i></div>
+            <div class="stat-info">
+                <h3>Total Sales Today</h3>
+                <div class="stat-value">$2,845.50</div>
+                <span class="trend up">+12.5%</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-blue"><i class="fas fa-shopping-bag"></i></div>
+            <div class="stat-info">
+                <h3>Total Orders</h3>
+                <div class="stat-value">156</div>
+                <span class="trend up">+8.2%</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-red"><i class="fas fa-box-open"></i></div>
+            <div class="stat-info">
+                <h3>Low Stock Items</h3>
+                <div class="stat-value">8</div>
+                <span class="badge urgent">Urgent</span>
+            </div>
+        </div>
+        <div class="stat-card">
+            <div class="stat-icon bg-brown"><i class="fas fa-user-friends"></i></div>
+            <div class="stat-info">
+                <h3>Active Cashiers</h3>
+                <div class="stat-value">4</div>
+                <span class="badge online">Online</span>
+            </div>
+        </div>
+    </div>
+
+    <div class="charts-row">
+        <div class="chart-card">
+            <h3>Sales Trend (This Week)</h3>
+            <div style="height: 300px;">
+                <canvas id="salesTrendChart"></canvas>
+            </div>
+        </div>
+        <div class="chart-card">
+            <h3>Expenses Breakdown</h3>
+            <div style="height: 250px;">
+                <canvas id="expensesChart"></canvas>
+            </div>
+        </div>
+
+        <div class="chart-card full-width">
+            <h3>Top Selling Products</h3>
+            <div style="height: 300px;">
+                <canvas id="topProductsChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="chart-card full-width">
+        <h3 style="color: #e74c3c;"><i class="fas fa-exclamation-triangle"></i> Low Stock Alerts</h3>
+        <div class="alert-list">
+            <div class="alert-item">
+                <div>
+                    <span class="product-name">Coffee Beans (Arabica)</span>
+                    <p style="font-size: 12px; color: #888;">Current Stock: 2kg</p>
+                </div>
+                <button class="restock-btn">Restock</button>
+            </div>
+            <div class="alert-item">
+                <div>
+                    <span class="product-name">Milk (Whole)</span>
+                    <p style="font-size: 12px; color: #888;">Current Stock: 5 liters</p>
+                </div>
+                <button class="restock-btn">Restock</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Cấu hình chung cho Chart
+        Chart.defaults.font.family = "'Plus Jakarta Sans', sans-serif";
+        Chart.defaults.color = '#8d6e63';
+
+        // 1. Sales Trend Chart (Line)
+        new Chart(document.getElementById('salesTrendChart'), {
+            type: 'line',
+            data: {
+                labels: ['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'],
+                datasets: [{
+                    label: 'Sales ($)',
+                    data: [1800, 2400, 2100, 2800, 3200, 3500, 3100],
+                    borderColor: '#4a342e',
+                    backgroundColor: 'rgba(74, 52, 46, 0.05)',
+                    fill: true,
+                    tension: 0.4,
+                    pointRadius: 5,
+                    pointBackgroundColor: '#4a342e'
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { border: { display: false }, grid: { color: '#f0f0f0' } },
+                    x: { border: { display: false }, grid: { display: false } }
+                }
+            }
+        });
+
+        // 2. Expenses Chart (Doughnut)
+        new Chart(document.getElementById('expensesChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Utilities', 'Supplies', 'Salaries', 'Others'],
+                datasets: [{
+                    data: [15, 30, 45, 10],
+                    backgroundColor: ['#8d6e63', '#a1887f', '#4a342e', '#d7ccc8'],
+                    hoverOffset: 4,
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { position: 'bottom', labels: { usePointStyle: true, padding: 20 } }
+                }
+            }
+        });
+
+        // 3. Top Products Chart (Bar)
+        new Chart(document.getElementById('topProductsChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Espresso', 'Latte', 'Cappuccino', 'Mocha', 'Croissant'],
+                datasets: [{
+                    label: 'Orders',
+                    data: [450, 380, 320, 280, 210],
+                    backgroundColor: '#8d6e63',
+                    borderRadius: 10,
+                    barThickness: 40
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: { legend: { display: false } },
+                scales: {
+                    y: { border: { display: false } },
+                    x: { grid: { display: false }, border: { display: false } }
+                }
+            }
+        });
+    });
+</script>

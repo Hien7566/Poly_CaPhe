@@ -1,0 +1,21 @@
+﻿@{
+    ViewData["Title"] = "Thêm danh mục";
+}
+
+<h2>Thêm danh mục mới</h2>
+
+@if (ViewBag.Error != null)
+{
+    <div class="alert alert-danger">@ViewBag.Error</div>
+}
+
+<form asp-action="Create" method="post">
+    <div class="form-group">
+        <label>Tên danh mục</label>
+        <input type="text" name="name" class="form-control" required />
+    </div>
+    <div class="form-group mt-3">
+        <button type="submit" class="btn btn-primary">Lưu</button>
+        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
+    </div>
+</form>

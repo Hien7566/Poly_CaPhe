@@ -1,0 +1,105 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Data;
+using Poly_Cafe.DTO;
+using Poly_Cafe.Utils;
+
+namespace Poly_Cafe.DAL
+{
+    public class DrinkDAL
+    {
+        public List<DrinkDTO> GetAll()
+        {
+            List<DrinkDTO> list = new List<DrinkDTO>();
+            string sql = @"SELECT d.*, c.name as CategoryName 
+                          FROM drinks d 
+                          JOIN categories c ON d.category_id = c.id 
+                          WHERE d.active = 1";
+            DataTable dt = DBUtil.QueryDataTable(sql, null);
+
+            foreach (DataRow row in dt.Rows)
+            {
+                list.Add(new DrinkDTO
+                {
+                    Id = Convert.ToInt32(row["id"]),
+                    CategoryId = Convert.ToInt32(row["category_id"]),
+                    CategoryName = row["CategoryName"].ToString(),
+                    Name = row["name"].ToString(),
+                    Price = Convert.ToInt32(row["price"]),
+                    Image = row["image"] != DBNull.Value ? row["image"].ToString() : "",
+                    Description = row["description"] != DBNull.Value ? row["description"].ToString() : "",
+                    Active = Convert.ToBoolean(row["active"])
+                });
+            }
+            return list;
+        }
+
+        public List<DrinkDTO> GetByCategory(int categoryId)
+        {
+            List<DrinkDTO> list = new List<DrinkDTO>();
+            string sql = "SELECT * FROM drinks WHERE category_id = @p0 AND active = 1";
+            DataTable dt = DBUtil.QueryDataTable(sql, new List<object> { categoryId });
+
+            foreach (DataRow row in dt.Rows)
+            {
+                list.Add(new DrinkDTO
+                {
+                    Id = Convert.ToInt32(row["id"]),
+                    CategoryId = Convert.ToInt32(row["category_id"]),
+                    Name = row["name"].ToString(),
+                    Price = Convert.ToInt32(row["price"]),
+                    Active = Convert.ToBoolean(row["active"])
+                });
+            }
+            return list;
+        }
+
+        public DrinkDTO GetById(int id)
+        {
+            string sql = @"SELECT d.*, c.name as CategoryName 
+                          FROM drinks d 
+                          JOIN categories c ON d.category_id = c.id 
+                          WHERE d.id = @p0";
+            DataTable dt = DBUtil.QueryDataTable(sql, new List<object> { id });
+
+            if (dt.Rows.Count == 0) return null;
+
+            DataRow row = dt.Rows[0];
+            return new DrinkDTO
+            {
+                Id = Convert.ToInt32(row["id"]),
+                CategoryId = Convert.ToInt32(row["category_id"]),
+                CategoryName = row["CategoryName"].ToString(),
+                Name = row["name"].ToString(),
+                Price = Convert.ToInt32(row["price"]),
+                Image = row["image"] != DBNull.Value ? row["image"].ToString() : "",
+                Description = row["description"] != DBNull.Value ? row["description"].ToString() : "",
+                Active = Convert.ToBoolean(row["active"])
+            };
+        }
+
+        public bool Insert(DrinkDTO drink)
+        {
+            string sql = @"INSERT INTO drinks (category_id, name, price, image, description, active) 
+                          VALUES (@p0, @p1, @p2, @p3, @p4, @p5)";
+            return DBUtil.ExecuteNonQuery(sql, new List<object> {
+                drink.CategoryId, drink.Name, drink.Price, drink.Image ?? "", drink.Description ?? "", true
+            }) > 0;
+        }
+
+        public bool Update(DrinkDTO drink)
+        {
+            string sql = @"UPDATE drinks SET category_id = @p0, name = @p1, price = @p2, 
+                          image = @p3, description = @p4 WHERE id = @p5";
+            return DBUtil.ExecuteNonQuery(sql, new List<object> {
+                drink.CategoryId, drink.Name, drink.Price, drink.Image ?? "", drink.Description ?? "", drink.Id
+            }) > 0;
+        }
+
+        public bool Delete(int id)
+        {
+            string sql = "UPDATE drinks SET active = 0 WHERE id = @p0";
+            return DBUtil.ExecuteNonQuery(sql, new List<object> { id }) > 0;
+        }
+    }
+}
