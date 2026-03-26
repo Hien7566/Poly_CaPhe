@@ -1,0 +1,7 @@
+<Solution>
+  <Project Path="Poly_Cafe.BLL/Poly_Cafe.BLL.csproj" />
+  <Project Path="Poly_Cafe.DAL/Poly_Cafe.DAL.csproj" />
+  <Project Path="Poly_Cafe.DTO/Poly_Cafe.DTO.csproj" />
+  <Project Path="Poly_Cafe.Utils/Poly_Cafe.Utils.csproj" />
+  <Project Path="Poly_Cafe/Poly_Cafe.csproj" />
+</Solution>

@@ -1,0 +1,10 @@
+bin/
+obj/
+*.dll
+*.exe
+*.pdb
+runtimes/
+.vs/
+appsettings.Development.json
+*.rar
+*.sql
