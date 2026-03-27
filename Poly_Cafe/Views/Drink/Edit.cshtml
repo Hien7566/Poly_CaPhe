@@ -1,1 +1,137 @@
-﻿
+﻿@model Poly_Cafe.DTO.DrinkDTO
+@{
+    ViewData["Title"] = "Cập nhật đồ uống";
+    Layout = "_Layout";
+}
+
+<style>
+    /* Giao diện Card bo góc giống trang Thêm mới */
+    .form-container { max-width: 800px; margin: 0 auto; }
+    .form-card { background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 40px; position: relative; }
+    
+    .form-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #f1f1f1; }
+    .form-header h4 { font-weight: 700; color: #2d3436; margin: 0; }
+    .btn-close-custom { background: none; border: none; font-size: 1.5rem; color: #b2bec3; cursor: pointer; text-decoration: none !important; }
+    .btn-close-custom:hover { color: #d63031; }
+
+    .form-label { font-size: 0.85rem; font-weight: 500; color: #636e72; margin-bottom: 8px; }
+    .custom-input { border: 1px solid #dfe6e9; border-radius: 8px; padding: 12px 15px; font-size: 0.95rem; box-shadow: none !important; }
+    .custom-input:focus { border-color: #8d6e63; }
+
+    /* Khung upload và xem trước ảnh */
+    .upload-area { border: 2px dashed #dfe6e9; border-radius: 12px; padding: 15px; text-align: center; cursor: pointer; background-color: #fcfcfc; position: relative; min-height: 180px; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+    .upload-area img { max-width: 100%; max-height: 160px; object-fit: contain; border-radius: 8px; }
+    .upload-icon { font-size: 2.5rem; color: #b2bec3; }
+    .btn-change-image { position: absolute; bottom: 10px; right: 10px; background-color: rgba(255,255,255,0.8); color: #4e342e; border: 1px solid #dfe6e9; padding: 5px 12px; border-radius: 6px; font-size: 0.8rem; font-weight: 600; }
+    .btn-change-image:hover { background-color: #fff; }
+
+    /* Vùng nút bấm hành động */
+    .action-buttons { display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f1f1; }
+    .btn-cancel { background-color: #f1f2f6; color: #2d3436; padding: 10px 25px; border-radius: 8px; font-weight: 600; text-decoration: none; }
+    .btn-cancel:hover { background-color: #dfe6e9; color: #2d3436; }
+    .btn-save { background-color: #4e342e; color: #fff; border: none; padding: 10px 25px; border-radius: 8px; font-weight: 600; }
+    .btn-save:hover { background-color: #3e2723; color: #fff; }
+</style>
+
+<div class="content-wrapper">
+    <div class="form-container">
+        <div class="form-card">
+            <div class="form-header">
+                <h4>Cập nhật đồ uống</h4>
+                <a href="/Drink" class="btn-close-custom"><i class="fas fa-times"></i></a>
+            </div>
+
+            <form asp-action="Edit" method="post" enctype="multipart/form-data">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Tên đồ uống</label>
+                        <input asp-for="Name" class="form-control custom-input" placeholder="Nhập tên đồ uống..." required />
+                    </div>
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Danh mục</label>
+                        <select asp-for="CategoryId" class="form-select custom-input">
+                            @if (ViewBag.Categories != null)
+                            {
+                                foreach (var cat in ViewBag.Categories)
+                                {
+                                    <option value="@cat.Id">@cat.Name</option>
+                                }
+                            }
+                        </select>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-6 mb-4">
+                        <label class="form-label">Giá bán (VNĐ)</label>
+                        <input asp-for="Price" type="number" class="form-control custom-input" placeholder="0" required />
+                    </div>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Mô tả chi tiết (Tùy chọn)</label>
+                    <textarea asp-for="Description" class="form-control custom-input" rows="4" placeholder="Nhập mô tả cho món đồ uống..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Hình ảnh sản phẩm</label>
+                    <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                        @{
+                            // Tái sử dụng logic hiển thị ảnh thông minh từ Index
+                            string finalImgPath = Model.Image;
+                            if (string.IsNullOrEmpty(finalImgPath))
+                            {
+                                string imgName = Model.Name.ToLower()
+                                    .Replace(" ", "_")
+                                    .Replace("à","a").Replace("á","a").Replace("ả","a").Replace("ã","a").Replace("ạ","a")
+                                    .Replace("ê","e").Replace("ề","e").Replace("ế","e").Replace("ể","e").Replace("ễ","e").Replace("ệ","e")
+                                    .Replace("ì","i").Replace("í","i").Replace("ỉ","i").Replace("ĩ","i").Replace("ị","i")
+                                    .Replace("ò","o").Replace("ó","o").Replace("ỏ","o").Replace("õ","o").Replace("ọ","o")
+                                    .Replace("ô","o").Replace("ồ","o").Replace("ố","o").Replace("ổ","o").Replace("ỗ","o").Replace("ộ","o")
+                                    .Replace("ơ","o").Replace("ờ","o").Replace("ớ","o").Replace("ở","o").Replace("ỡ","o").Replace("ợ","o")
+                                    .Replace("ù","u").Replace("ú","u").Replace("ủ","u").Replace("ũ","u").Replace("ụ","u")
+                                    .Replace("ư","u").Replace("ừ","u").Replace("ứ","u").Replace("ử","u").Replace("ữ","u").Replace("ự","u")
+                                    .Replace("ỳ","y").Replace("ý","y").Replace("ỷ","y").Replace("ỹ","y").Replace("ỵ","y")
+                                    .Replace("đ","d");
+                                finalImgPath = "/image/" + imgName + ".jpg";
+                            }
+                        }
+                        
+                        <img src="@finalImgPath" id="imagePreview" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                        <i class="fas fa-mug-hot upload-icon" style="display:none;"></i>
+                        
+                        <div class="btn-change-image"><i class="fas fa-camera me-1"></i> Đổi ảnh</div>
+                        
+                        <input type="file" id="fileInput" name="ImageFile" style="display: none;" accept="image/png, image/jpeg" />
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <a href="/Drink" class="btn-cancel">Hủy bỏ</a>
+                    <button type="submit" class="btn-save">Cập nhật dữ liệu</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // JS để hiện ảnh xem trước ngay khi người dùng chọn file
+        document.getElementById('fileInput').addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const preview = document.getElementById('imagePreview');
+                    preview.src = e.target.result;
+                    preview.style.display = 'block'; // Hiện ảnh
+                    preview.nextElementSibling.style.display = 'none'; // Ẩn icon ly
+                }
+                reader.readAsDataURL(file);
+            }
+        });
+    </script>
+}

@@ -1,21 +1,77 @@
-﻿@{
-    ViewData["Title"] = "Thêm danh mục";
+﻿@model Poly_Cafe.DTO.CategoryDTO
+@{
+    ViewData["Title"] = "Thêm mới danh mục";
+    Layout = "_Layout";
 }
 
-<h2>Thêm danh mục mới</h2>
+<style>
+    .form-container { max-width: 650px; margin: 0 auto; } /* Form danh mục làm nhỏ lại cho cân đối */
+    .form-card { background: #fff; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); padding: 40px; position: relative; }
+    
+    .form-header { margin-bottom: 30px; padding-bottom: 20px; border-bottom: 1px solid #f1f1f1; }
+    .form-header h4 { font-weight: 700; color: #2d3436; margin: 0; display: flex; align-items: center; gap: 10px; }
+    
+    .form-label { font-size: 0.9rem; font-weight: 600; color: #2d3436; margin-bottom: 8px; }
+    .text-danger { color: #e74c3c; } /* Dấu sao bắt buộc */
 
-@if (ViewBag.Error != null)
-{
-    <div class="alert alert-danger">@ViewBag.Error</div>
-}
+    .custom-input { border: 1px solid #dfe6e9; border-radius: 8px; padding: 12px 15px; font-size: 0.95rem; color: #2d3436; box-shadow: none; transition: 0.3s; }
+    .custom-input:focus { border-color: #8d6e63; box-shadow: 0 0 0 0.2rem rgba(141, 110, 99, 0.15); }
 
-<form asp-action="Create" method="post">
-    <div class="form-group">
-        <label>Tên danh mục</label>
-        <input type="text" name="name" class="form-control" required />
+    /* Custom Radio Buttons cho Trạng thái */
+    .status-group { display: flex; gap: 30px; margin-top: 10px; padding: 10px 15px; background: #fdfaf5; border-radius: 8px; border: 1px solid #f1f1f1; }
+    .form-check-input:checked { background-color: #8d6e63; border-color: #8d6e63; }
+    .status-dot { display: inline-block; width: 10px; height: 10px; border-radius: 50%; margin-right: 5px; }
+    .status-active { background-color: #2ecc71; box-shadow: 0 0 6px rgba(46, 204, 113, 0.4); }
+    .status-inactive { background-color: #e74c3c; box-shadow: 0 0 6px rgba(231, 76, 60, 0.4); }
+
+    .action-buttons { display: flex; justify-content: flex-start; gap: 15px; margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f1f1; }
+    .btn-cancel { background-color: #f1f2f6; color: #2d3436; border: none; padding: 10px 30px; border-radius: 8px; font-weight: 600; text-decoration: none; transition: 0.3s; }
+    .btn-cancel:hover { background-color: #dfe6e9; color: #2d3436; }
+    .btn-save { background-color: #4e342e; color: #fff; border: none; padding: 10px 30px; border-radius: 8px; font-weight: 600; transition: 0.3s; display: flex; align-items: center; gap: 8px; }
+    .btn-save:hover { background-color: #3e2723; color: #fff; }
+</style>
+
+<div class="content-wrapper">
+    <div class="form-container">
+        <div class="form-card">
+            <div class="form-header">
+                <h4><i class="fas fa-plus-circle" style="color: #8d6e63;"></i> Thêm danh mục mới</h4>
+            </div>
+
+            <form asp-action="Create" method="post">
+                <div class="mb-4">
+                    <label class="form-label">Tên danh mục <span class="text-danger">*</span></label>
+                    <input name="Name" class="form-control custom-input" placeholder="Nhập tên danh mục..." required />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Mô tả chi tiết</label>
+                    <textarea name="Description" class="form-control custom-input" rows="3" placeholder="Nhập mô tả cho danh mục này..."></textarea>
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label">Trạng thái</label>
+                    <div class="status-group">
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="Active" id="statusActive" value="true" checked>
+                            <label class="form-check-label fw-500" for="statusActive">
+                                <span class="status-dot status-active"></span> Hoạt động
+                            </label>
+                        </div>
+                        <div class="form-check">
+                            <input class="form-check-input" type="radio" name="Active" id="statusInactive" value="false">
+                            <label class="form-check-label fw-500" for="statusInactive">
+                                <span class="status-dot status-inactive"></span> Tạm dừng
+                            </label>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="action-buttons">
+                    <button type="submit" class="btn-save"><i class="fas fa-save"></i> Lưu dữ liệu</button>
+                    <a href="/Category" class="btn-cancel"><i class="fas fa-arrow-left me-1"></i> Hủy</a>
+                </div>
+            </form>
+        </div>
     </div>
-    <div class="form-group mt-3">
-        <button type="submit" class="btn btn-primary">Lưu</button>
-        <a asp-action="Index" class="btn btn-secondary">Hủy</a>
-    </div>
-</form>
+</div>

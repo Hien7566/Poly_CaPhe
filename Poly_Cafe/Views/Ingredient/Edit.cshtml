@@ -1,1 +1,80 @@
-﻿
+﻿@model Poly_Cafe.DTO.IngredientDTO
+@{
+    ViewData["Title"] = "Cập nhật Nguyên Liệu";
+    Layout = "_Layout";
+}
+
+<style>
+    /* Dùng chung CSS với Create */
+    .content-wrapper { font-family: 'Segoe UI', sans-serif; color: #333; }
+    .breadcrumb-text { font-size: 0.85rem; color: #b2bec3; margin-bottom: 15px; font-weight: 500; }
+    .breadcrumb-text a { color: #8d6e63; text-decoration: none; }
+    .data-card { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); padding: 30px; }
+    .form-label { font-weight: 600; color: #2d3436; font-size: 0.95rem; }
+    .form-control { border-radius: 10px; padding: 12px 15px; border: 1px solid #eee; background-color: #fdfaf5; }
+    .form-control:focus { border-color: #8d6e63; box-shadow: 0 0 0 0.2rem rgba(141, 110, 99, 0.25); background-color: #fff; }
+    .btn-save { background-color: #4e342e; color: white; border-radius: 10px; padding: 10px 30px; font-weight: 600; border: none; transition: 0.3s; }
+    .btn-save:hover { background-color: #3e2723; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .btn-cancel { background-color: #f1f2f6; color: #2d3436; border-radius: 10px; padding: 10px 30px; font-weight: 600; border: none; text-decoration: none; margin-right: 10px; transition: 0.3s; }
+    .btn-cancel:hover { background-color: #dfe4ea; color: #2d3436; }
+</style>
+
+<div class="content-wrapper">
+    <div class="breadcrumb-text">
+        <i class="fas fa-home"></i> <a href="/Dashboard">Bảng điều khiển</a> &nbsp; / &nbsp; <a href="/Ingredient">Kho nguyên liệu</a> &nbsp; / &nbsp; Cập nhật nguyên liệu
+    </div>
+
+    <h4 class="mb-4" style="font-weight: 700; color: #2d3436;">Cập Nhật Thông Tin Kho</h4>
+
+    <div class="data-card">
+        <form action="/Ingredient/Edit" method="post">
+            <input type="hidden" name="Id" value="@Model.Id" />
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Tên nguyên liệu <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="Name" required value="@Model.Name">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Nhà cung cấp</label>
+                    <input type="text" class="form-control" name="Supplier" value="@Model.Supplier">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Số lượng tồn kho <span class="text-danger">*</span></label>
+                    <input type="number" step="0.01" class="form-control" name="Stock_Quantity" required value="@Model.Stock_Quantity.ToString("G29")">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Đơn vị tính <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="Unit" required value="@Model.Unit">
+                </div>
+                <div class="col-md-4 mb-3">
+                    <label class="form-label">Giá nhập (VNĐ) <span class="text-danger">*</span></label>
+                    <input type="number" class="form-control" name="Price_Per_Unit" required value="@Math.Round(Model.Price_Per_Unit)">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <label class="form-label text-warning"><i class="fas fa-bell"></i> Mức cảnh báo sắp hết</label>
+                    <input type="number" step="0.01" class="form-control" name="Min_Stock" required value="@Model.Min_Stock.ToString("G29")">
+                </div>
+                <div class="col-md-6 mb-4 d-flex align-items-end">
+                    <div class="form-check form-switch" style="font-size: 1.1rem; margin-bottom: 10px;">
+                        <input class="form-check-input" type="checkbox" name="Active" id="Active" value="true" @(Model.Active ? "checked" : "")>
+                        <label class="form-check-label ms-2 form-label" for="Active">Đang sử dụng</label>
+                    </div>
+                </div>
+            </div>
+
+            <hr style="border-color: #eee; margin-bottom: 25px;" />
+
+            <div class="text-end">
+                <a href="/Ingredient" class="btn-cancel">Hủy bỏ</a>
+                <button type="submit" class="btn-save"><i class="fas fa-save me-2"></i> Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>

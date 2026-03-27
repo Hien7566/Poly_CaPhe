@@ -21,12 +21,12 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseHttpsRedirection();
-app.UseRouting();
+// ĐÃ SỬA: Tạm thời tắt tự động chuyển hướng HTTPS để sửa lỗi ERR_CONNECTION_RESET
+// app.UseHttpsRedirection(); 
 
+app.UseRouting();
 app.UseSession();  // ← THÊM DÒNG NÀY
 app.UseAuthorization();
-
 app.MapStaticAssets();
 
 // SỬA: Đổi Home thành Dashboard

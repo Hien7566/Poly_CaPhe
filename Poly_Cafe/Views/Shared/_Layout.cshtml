@@ -6,119 +6,145 @@
     <title>@ViewData["Title"] - Poly Coffee</title>
 
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
-
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    
     <style>
-        :root {
-            --sidebar-bg: #4e342e; /* Nâu đậm Poly Coffee */
-            --hover-bg: #6d4c41; /* Nâu sáng khi di chuột */
-            --active-bg: #8d6e63; /* Nâu highlight khi đang ở trang đó */
-            --text-color: #efebe9;
-        }
-
-        body {
-            margin: 0;
-            display: flex;
-            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-            background-color: #fdfaf5;
-        }
-
-        /* Sidebar chính */
-        .sidebar {
-            width: 280px;
-            background-color: var(--sidebar-bg);
-            height: 100vh;
-            color: var(--text-color);
-            position: fixed;
-            display: flex;
-            flex-direction: column;
-            box-shadow: 4px 0 10px rgba(0,0,0,0.1);
-        }
-
-        /* Logo & Tên quán */
-        .sidebar-brand {
-            padding: 30px 20px;
-            text-align: center;
-            border-bottom: 1px solid rgba(255,255,255,0.1);
-        }
-
-            .sidebar-brand i {
-                font-size: 35px;
-                margin-bottom: 10px;
-                display: block;
-                color: #d7ccc8;
+            :root {
+                --sidebar-bg: #4e342e; /* Nâu Poly Coffee */
+                --sidebar-active: #6d4c41;
+                --main-bg: #fdfaf5; /* Kem nhạt Latte Logic */
+                --text-main: #2d3436;
             }
 
-            .sidebar-brand h2 {
+            body {
                 margin: 0;
-                font-size: 20px;
-                letter-spacing: 2px;
-                text-transform: uppercase;
+                display: flex;
+                font-family: 'Inter', 'Segoe UI', sans-serif;
+                background-color: var(--main-bg);
+                color: var(--text-main);
             }
 
-        /* Danh sách Menu */
-        .nav-menu {
-            list-style: none;
-            padding: 20px 0;
-            margin: 0;
-            flex-grow: 1;
-            overflow-y: auto;
-        }
-
-        .nav-item {
-            margin: 4px 15px;
-        }
-
-        .nav-link {
-            display: flex;
-            align-items: center;
-            padding: 12px 15px;
-            color: var(--text-color);
-            text-decoration: none;
-            gap: 12px;
-            border-radius: 10px;
-            transition: 0.3s;
-            font-size: 15px;
-        }
-
-            .nav-link:hover {
-                background-color: var(--hover-bg);
+            /* SIDEBAR */
+            .sidebar {
+                width: 280px;
+                background-color: var(--sidebar-bg);
+                height: 100vh;
+                color: #efebe9;
+                position: fixed;
+                display: flex;
+                flex-direction: column;
+                z-index: 1000;
             }
 
-        /* Trạng thái trang hiện tại */
-        .nav-item.active .nav-link {
-            background-color: var(--active-bg);
-            font-weight: bold;
-            box-shadow: 0 4px 8px rgba(0,0,0,0.2);
-        }
-
-        /* Phần dưới cùng (Đăng xuất) */
-        .sidebar-footer {
-            padding: 20px;
-            border-top: 1px solid rgba(255,255,255,0.1);
-        }
-
-        .logout-btn {
-            color: #d7ccc8;
-            text-decoration: none;
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            padding: 10px 15px;
-            transition: 0.3s;
-        }
-
-            .logout-btn:hover {
-                color: #fff;
-                transform: translateX(5px);
+            .sidebar-brand {
+                padding: 30px 20px 20px 20px; /* Thu nhỏ padding một chút cho gọn */
+                text-align: center;
             }
 
-        /* Nội dung bên phải */
-        .main-content {
-            margin-left: 280px;
-            width: calc(100% - 280px);
-            padding: 30px;
-            min-height: 100vh;
-        }
+                .sidebar-brand i {
+                    font-size: 36px;
+                    margin-bottom: 10px;
+                    display: block;
+                }
+
+                .sidebar-brand h2 {
+                    font-size: 20px;
+                    font-weight: 700;
+                    margin: 0;
+                    letter-spacing: 1px;
+                }
+
+                .sidebar-brand p {
+                    font-size: 13px;
+                    opacity: 0.7;
+                    margin: 0;
+                }
+
+            /* VÙNG MENU CUỘN ĐƯỢC */
+            .nav-menu {
+                list-style: none;
+                padding: 10px 0;
+                margin: 0;
+                flex-grow: 1;
+                overflow-y: auto; /* Bật tính năng cuộn dọc */
+                overflow-x: hidden;
+            }
+
+            /* Làm đẹp thanh cuộn cho thanh menu */
+            .nav-menu::-webkit-scrollbar {
+                width: 5px; /* Kích thước thanh cuộn vừa phải, thanh lịch */
+            }
+            .nav-menu::-webkit-scrollbar-track {
+                background: transparent;
+            }
+            .nav-menu::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+            }
+            .nav-menu::-webkit-scrollbar-thumb:hover {
+                background: rgba(255, 255, 255, 0.4);
+            }
+
+            .nav-item {
+                margin: 4px 15px; /* Rút gọn khoảng cách giữa các nút để vừa vặn hơn */
+            }
+
+            .nav-link {
+                display: flex;
+                align-items: center;
+                padding: 10px 15px;
+                color: #d7ccc8 !important;
+                text-decoration: none !important;
+                gap: 15px;
+                border-radius: 12px;
+                transition: 0.3s;
+                font-size: 15px;
+            }
+
+                .nav-link:hover {
+                    background-color: var(--sidebar-active);
+                    color: #fff !important;
+                }
+
+            .nav-item.active .nav-link {
+                background-color: rgba(255,255,255,0.15);
+                color: #fff !important;
+                font-weight: 600;
+            }
+
+            .sidebar-footer {
+                padding: 20px;
+                border-top: 1px solid rgba(255,255,255,0.05);
+            }
+
+            .logout-link {
+                color: #d7ccc8 !important;
+                text-decoration: none !important;
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                font-size: 15px;
+            }
+            
+            .logout-link:hover {
+                color: #fff !important;
+            }
+
+            /* NỘI DUNG BÊN PHẢI */
+            .main-wrapper {
+                margin-left: 280px;
+                width: calc(100% - 280px);
+                min-height: 100vh;
+                display: flex;
+                flex-direction: column;
+            }
+
+            .content-body {
+                padding: 40px;
+                flex-grow: 1;
+            }
     </style>
 </head>
 <body>
@@ -127,13 +153,13 @@
         <div class="sidebar-brand">
             <i class="fas fa-coffee"></i>
             <h2>POLY COFFEE</h2>
-            <small style="opacity: 0.7;">Quản lý cửa hàng</small>
+            <p>Quản lý cửa hàng</p>
         </div>
 
-        <ul class="nav-menu" id="mainMenu">
+        <ul class="nav-menu">
             <li class="nav-item">
                 <a href="@Url.Action("Index", "Dashboard")" class="nav-link">
-                    <i class="fas fa-chart-pie"></i> Bảng điều khiển
+                    <i class="fas fa-chart-line"></i> Bảng điều khiển
                 </a>
             </li>
             <li class="nav-item">
@@ -142,30 +168,51 @@
                 </a>
             </li>
             <li class="nav-item">
+                <a href="@Url.Action("Index", "Order")" class="nav-link">
+                    <i class="fas fa-clipboard-list"></i> Quản lý đơn hàng
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="@Url.Action("Index", "Drink")" class="nav-link">
                     <i class="fas fa-mug-hot"></i> Thực đơn đồ uống
                 </a>
             </li>
             <li class="nav-item">
+                <a href="@Url.Action("Index", "Category")" class="nav-link">
+                    <i class="fas fa-tags"></i> Quản lý danh mục
+                </a>
+            </li>
+            <li class="nav-item">
                 <a href="@Url.Action("Index", "User")" class="nav-link">
-                    <i class="fas fa-users-cog"></i> Quản lý nhân viên
+                    <i class="fas fa-users"></i> Quản lý nhân viên
                 </a>
             </li>
             <li class="nav-item">
                 <a href="@Url.Action("Index", "Shift")" class="nav-link">
-                    <i class="fas fa-user-clock"></i> Quản lý ca làm
+                    <i class="fas fa-calendar-alt"></i> Quản lý ca làm
                 </a>
             </li>
             <li class="nav-item">
                 <a href="@Url.Action("Index", "Ingredient")" class="nav-link">
-                    <i class="fas fa-blender"></i> Kho nguyên liệu
+                    <i class="fas fa-boxes"></i> Kho nguyên liệu
                 </a>
             </li>
             <li class="nav-item">
                 <a href="@Url.Action("Index", "Recipe")" class="nav-link">
-                    <i class="fas fa-book-open"></i> Công thức pha chế
+                    <i class="fas fa-book"></i> Công thức pha chế
                 </a>
             </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Customer")" class="nav-link">
+                    <i class="fas fa-id-card"></i> Quản lý khách hàng
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Report")" class="nav-link">
+                    <i class="fas fa-chart-pie"></i> Báo cáo thống kê
+                </a>
+            </li>
+            
             <li class="nav-item">
                 <a href="@Url.Action("Index", "Setting")" class="nav-link">
                     <i class="fas fa-cog"></i> Cài đặt hệ thống
@@ -174,32 +221,32 @@
         </ul>
 
         <div class="sidebar-footer">
-            <a href="@Url.Action("Logout", "Home")" class="logout-btn">
+            <a href="/Home/Logout" class="logout-link">
                 <i class="fas fa-sign-out-alt"></i> Đăng xuất
             </a>
         </div>
     </aside>
 
-    <main class="main-content">
-        @RenderBody()
-    </main>
+    <div class="main-wrapper">
+        <main class="content-body">
+            @RenderBody()
+        </main>
+    </div>
 
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
     <script>
-        document.addEventListener("DOMContentLoaded", function () {
-            const currentPath = window.location.pathname.toLowerCase();
-            const menuItems = document.querySelectorAll('.nav-item');
-
-            menuItems.forEach(item => {
-                const link = item.querySelector('.nav-link').getAttribute('href').toLowerCase();
-                // Kiểm tra nếu đường dẫn hiện tại khớp với link menu
-                if (currentPath.includes(link) && link !== "/") {
-                    item.classList.add('active');
-                } else if (currentPath === "/" && link.includes("dashboard")) {
-                    item.classList.add('active');
-                }
+            // Tự động thêm class active cho menu dựa trên URL
+            document.addEventListener("DOMContentLoaded", function () {
+                const path = window.location.pathname.toLowerCase();
+                document.querySelectorAll('.nav-item').forEach(item => {
+                    const link = item.querySelector('.nav-link').getAttribute('href').toLowerCase();
+                    if (path.includes(link) && link !== "/") {
+                        item.classList.add('active');
+                    }
+                });
             });
-        });
     </script>
-
+    @await RenderSectionAsync("Scripts", required: false)
 </body>
 </html>

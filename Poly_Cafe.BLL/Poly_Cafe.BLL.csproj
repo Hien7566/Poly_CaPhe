@@ -7,6 +7,10 @@
   </PropertyGroup>
 
   <ItemGroup>
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
     <ProjectReference Include="..\Poly_Cafe.DAL\Poly_Cafe.DAL.csproj" />
     <ProjectReference Include="..\Poly_Cafe.DTO\Poly_Cafe.DTO.csproj" />
   </ItemGroup>

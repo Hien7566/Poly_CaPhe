@@ -2,13 +2,14 @@
 using Poly_Cafe.Utils;
 using System;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
 
 namespace Poly_Cafe.DAL
 {
     public class UserDAL
     {
-        public UserDTO CheckLogin(string email, string password)
+        // Đổi kiểu trả về thành UserDTO? (thêm dấu ?) để báo hiệu phương thức có thể trả về null
+        public UserDTO? CheckLogin(string email, string password)
         {
             string sql = @"SELECT id, email, full_name, phone, address, birthday, 
                                   gender, role, hire_date, salary, active
@@ -17,21 +18,20 @@ namespace Poly_Cafe.DAL
 
             SqlParameter[] parameters = new SqlParameter[]
             {
-                new SqlParameter("@Email", email),
-                new SqlParameter("@Password", password)
+                new SqlParameter("@Email", email ?? (object)DBNull.Value),
+                new SqlParameter("@Password", password ?? (object)DBNull.Value)
             };
 
             DataTable dt = DBUtil.ExecuteQuery(sql, parameters);
 
-            if (dt.Rows.Count > 0)
+            if (dt != null && dt.Rows.Count > 0)
             {
                 return MapRowToUserDTO(dt.Rows[0]);
             }
             return null;
         }
 
-        // Hàm bổ sung để fix lỗi Build lúc nãy
-        public UserDTO GetUserById(int userId)
+        public UserDTO? GetUserById(int userId)
         {
             string sql = @"SELECT id, email, full_name, phone, address, birthday, 
                                   gender, role, hire_date, salary, active
@@ -45,29 +45,39 @@ namespace Poly_Cafe.DAL
 
             DataTable dt = DBUtil.ExecuteQuery(sql, parameters);
 
-            if (dt.Rows.Count > 0)
+            if (dt != null && dt.Rows.Count > 0)
             {
                 return MapRowToUserDTO(dt.Rows[0]);
             }
             return null;
         }
 
-        // Hàm dùng chung để chuyển dữ liệu từ Row sang Object cho gọn
+        // Hàm mapping đã được fix lỗi DBNull và ép kiểu an toàn
         private UserDTO MapRowToUserDTO(DataRow row)
         {
             return new UserDTO
             {
-                Id = (int)row["id"],
-                Email = row["email"].ToString(),
-                FullName = row["full_name"].ToString(),
-                Phone = row["phone"]?.ToString(),
+                // Sử dụng toán tử kiểm tra DBNull.Value
+                Id = row["id"] != DBNull.Value ? (int)row["id"] : 0,
+
+                // Sử dụng ?.ToString() ?? "" để tránh lỗi null reference
+                Email = row["email"]?.ToString() ?? "",
+                FullName = row["full_name"]?.ToString() ?? "",
+                Phone = row["phone"]?.ToString() ?? "",
+
                 Address = row["address"] != DBNull.Value ? row["address"].ToString() : null,
+
+                // Ép kiểu an toàn cho DateTime và các kiểu Nullable
                 Birthday = row["birthday"] != DBNull.Value ? Convert.ToDateTime(row["birthday"]) : (DateTime?)null,
-                Gender = row["gender"] != DBNull.Value ? (bool)row["gender"] : (bool?)null,
-                Role = (bool)row["role"],
                 HireDate = row["hire_date"] != DBNull.Value ? Convert.ToDateTime(row["hire_date"]) : (DateTime?)null,
-                Salary = row["salary"] != DBNull.Value ? Convert.ToInt32(row["salary"]) : (int?)null,
-                Active = (bool)row["active"]
+
+                Gender = row["gender"] != DBNull.Value ? (bool)row["gender"] : (bool?)null,
+
+                // Các trường bắt buộc không được null trong DB
+                Role = row["role"] != DBNull.Value ? (bool)row["role"] : false,
+                Active = row["active"] != DBNull.Value ? (bool)row["active"] : false,
+
+                Salary = row["salary"] != DBNull.Value ? Convert.ToInt32(row["salary"]) : (int?)null
             };
         }
     }

@@ -1,47 +1,211 @@
-﻿@model List<Poly_Cafe.DTO.CategoryDTO>
-
+﻿@model IEnumerable<Poly_Cafe.DTO.CategoryDTO> 
 @{
     ViewData["Title"] = "Quản lý danh mục";
+    Layout = "_Layout"; 
+    int stt = 1; 
 }
 
-<h2>Quản lý danh mục</h2>
+@* --- THUẬT TOÁN RAZOR: TỰ ĐỘNG BẮT KEYWORD ĐỂ HIỂN THỊ ICON MÀU --- *@
+@functions {
+    public string VietnameseToAscii(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "";
+        string asciiName = name.ToLower().Trim();
+        asciiName = asciiName.Replace("à", "a").Replace("á", "a").Replace("ả", "a").Replace("ã", "a").Replace("ạ", "a");
+        asciiName = asciiName.Replace("ê", "e").Replace("ề", "e").Replace("ế", "e").Replace("ể", "e").Replace("ễ", "e").Replace("ệ", "e");
+        asciiName = asciiName.Replace("ì", "i").Replace("í", "i").Replace("ỉ", "i").Replace("ĩ", "i").Replace("ị", "i");
+        asciiName = asciiName.Replace("ò", "o").Replace("ó", "o").Replace("ỏ", "o").Replace("õ", "o").Replace("ọ", "o");
+        asciiName = asciiName.Replace("ô", "o").Replace("ồ", "o").Replace("ố", "o").Replace("ổ", "o").Replace("ỗ", "o").Replace("ộ", "o");
+        asciiName = asciiName.Replace("ơ", "o").Replace("ờ", "o").Replace("ớ", "o").Replace("ở", "o").Replace("ỡ", "o").Replace("ợ", "o");
+        asciiName = asciiName.Replace("ù", "u").Replace("ú", "u").Replace("ủ", "u").Replace("ũ", "u").Replace("ụ", "u");
+        asciiName = asciiName.Replace("ư", "u").Replace("ừ", "u").Replace("ứ", "u").Replace("ử", "u").Replace("ữ", "u").Replace("ự", "u");
+        asciiName = asciiName.Replace("ỳ", "y").Replace("ý", "y").Replace("ỷ", "y").Replace("ỹ", "y").Replace("ỵ", "y");
+        asciiName = asciiName.Replace("đ", "d");
+        return asciiName;
+    }
 
-@if (TempData["Success"] != null)
-{
-    <div class="alert alert-success">@TempData["Success"]</div>
+    public string GetColorfulIcon(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "🏷️";
+
+        var norm = VietnameseToAscii(name);
+        
+        // Dùng .Contains để bắt từ khóa chuẩn xác dù có dấu cách hay không
+        if (norm.Contains("ca phe") || norm.Contains("coffee")) return "☕";
+        if (norm.Contains("banh")) return "🍰"; 
+        if (norm.Contains("sinh to")) return "🥑";
+        if (norm.Contains("nuoc ngot") || norm.Contains("soda")) return "🥤";
+        if (norm.Contains("da xay")) return "🧊";
+        if (norm.Contains("kem")) return "🍦";
+        if (norm.Contains("tra ") || norm == "tra") return "🍵";
+        if (norm.Contains("tra sua")) return "🧋";
+        
+        return "🏷️"; // Mặc định nếu không tìm thấy
+    }
 }
-@if (TempData["Error"] != null)
-{
-    <div class="alert alert-danger">@TempData["Error"]</div>
+@* ----------------------------------------------------------------- *@
+
+<style>
+    .content-wrapper { font-family: 'Segoe UI', sans-serif; color: #333; }
+    
+    .breadcrumb-text { font-size: 0.85rem; color: #b2bec3; margin-bottom: 15px; font-weight: 500; }
+    .breadcrumb-text i { margin-right: 5px; }
+    .breadcrumb-text a { color: #8d6e63; text-decoration: none; }
+    
+    .welcome-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .welcome-text h4 { font-weight: 700; margin: 0; color: #2d3436; display: flex; align-items: center; gap: 10px; }
+    
+    .btn-add-product { background-color: #4e342e; color: white !important; border-radius: 12px; padding: 10px 20px; font-weight: 600; text-decoration: none; transition: 0.3s; border: none; }
+    .btn-add-product:hover { background-color: #3e2723; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+
+    .search-bar-container { position: relative; margin-bottom: 25px; }
+    .search-input { width: 100%; padding: 12px 20px 12px 50px; border-radius: 12px; border: 1px solid #eee; background: white; box-shadow: 0 4px 15px rgba(0,0,0,0.02); outline: none; transition: 0.3s; font-size: 0.95rem; }
+    .search-input:focus { border-color: #8d6e63; box-shadow: 0 4px 20px rgba(141, 110, 99, 0.1); }
+    .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #b2bec3; font-size: 1.1rem; }
+
+    .data-card { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); overflow: hidden; padding: 20px; }
+    
+    .custom-table { width: 100%; border-collapse: collapse; margin: 0; }
+    .custom-table thead { border-bottom: 2px solid #f1f1f1; }
+    .custom-table th { padding: 15px 10px; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #b2bec3; letter-spacing: 1px; font-weight: 600; }
+    .custom-table td { padding: 15px 10px; border-bottom: 1px solid #f9f9f9; vertical-align: middle; font-size: 0.95rem; color: #2d3436; }
+    .custom-table tbody tr:hover { background-color: #fdfaf5; transition: 0.2s; }
+
+    /* --- GIAO DIỆN ICON NỀN MÀU KEM GIỐNG ẢNH --- */
+    .category-name { display: flex; align-items: center; gap: 15px; font-weight: 600; }
+    .category-icon { 
+        width: 48px; 
+        height: 48px; 
+        background-color: #f5ebe1; /* Màu nền kem nhạt cực đẹp */
+        border-radius: 14px; 
+        display: flex; 
+        align-items: center; 
+        justify-content: center; 
+        font-size: 1.6rem; /* Size to ra để icon rõ nét */
+    }
+
+    .status-dot { display: inline-block; width: 12px; height: 12px; border-radius: 50%; }
+    .status-active { background-color: #2ecc71; box-shadow: 0 0 8px rgba(46, 204, 113, 0.5); }
+    .status-inactive { background-color: #e74c3c; box-shadow: 0 0 8px rgba(231, 76, 60, 0.5); }
+
+    .action-btn { background: none; border: none; padding: 5px; margin: 0 5px; cursor: pointer; transition: 0.2s; color: #b2bec3; text-decoration: none; }
+    .btn-edit:hover { color: #4e342e; }
+    .btn-delete:hover { color: #d63031; }
+
+    .pagination-container { margin-top: 20px; padding-top: 15px; border-top: 1px solid #f1f1f1; font-size: 0.9rem; color: #636e72; }
+</style>
+
+<div class="content-wrapper">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px; font-weight: 500;">
+            <i class="fas fa-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="breadcrumb-text">
+        <i class="fas fa-home"></i> <a href="/Dashboard">Bảng điều khiển</a> &nbsp; / &nbsp; Quản lý danh mục
+    </div>
+
+    <div class="welcome-section">
+        <div class="welcome-text">
+            <h4><i class="fas fa-folder-open" style="color: #8d6e63;"></i> Quản lý Danh mục</h4>
+        </div>
+        <a href="/Category/Create" class="btn-add-product">
+            <i class="fas fa-plus me-2"></i> Thêm danh mục
+        </a>
+    </div>
+
+    <div class="data-card">
+        <div class="search-bar-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm danh mục.......">
+        </div>
+
+        <table class="custom-table" id="categoryTable">
+            <thead>
+                <tr>
+                    <th width="8%">STT</th>
+                    <th width="35%">Tên danh mục</th>
+                    <th width="35%">Mô tả</th>
+                    <th width="10%" class="text-center">TT</th>
+                    <th width="12%" class="text-center">Hành động</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td style="font-weight: 600; color: #b2bec3;">@stt</td>
+                            
+                            <td>
+                                <div class="category-name">
+                                    <div class="category-icon">
+                                        @* Gọi hàm xuất icon màu sắc *@
+                                        @GetColorfulIcon(item.Name)
+                                    </div>
+                                    @item.Name
+                                </div>
+                            </td>
+
+                            <td style="color: #636e72;">
+                                @item.Description
+                            </td>
+
+                            <td class="text-center">
+                                @if (item.Active)
+                                {
+                                    <span class="status-dot status-active" title="Hoạt động"></span>
+                                }
+                                else
+                                {
+                                    <span class="status-dot status-inactive" title="Tạm dừng"></span>
+                                }
+                            </td>
+
+                            <td class="text-center">
+                                <a href="/Category/Edit/@item.Id" class="action-btn btn-edit" title="Sửa"><i class="far fa-edit"></i></a>
+                                <form action="/Category/Delete/@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa danh mục này?');">
+                                    <button type="submit" class="action-btn btn-delete" title="Xóa"><i class="far fa-trash-alt"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        stt++; 
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="5" class="text-center py-5 text-muted">Chưa có danh mục nào. Hãy thêm mới!</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+
+        <div class="pagination-container">
+            <i class="far fa-file-alt me-1"></i> Hiển thị tổng cộng @(stt - 1) danh mục
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('searchInput').addEventListener('input', function () {
+            var keyword = this.value.toLowerCase().trim();
+            var rows = document.querySelectorAll('#categoryTable tbody tr');
+
+            rows.forEach(function (row) {
+                if (row.cells[0].hasAttribute('colspan')) return;
+                var categoryName = row.cells[1].textContent.toLowerCase();
+                if (categoryName.includes(keyword)) {
+                    row.style.display = ''; 
+                } else {
+                    row.style.display = 'none'; 
+                }
+            });
+        });
+    </script>
 }
-
-<p>
-    <a asp-action="Create" class="btn btn-primary">Thêm mới</a>
-</p>
-
-<table class="table table-bordered">
-    <thead>
-        <tr>
-            <th>ID</th>
-            <th>Tên danh mục</th>
-            <th>Trạng thái</th>
-            <th>Hành động</th>
-        </tr>
-    </thead>
-    <tbody>
-        @foreach (var item in Model)
-        {
-            <tr>
-                <td>@item.Id</td>
-                <td>@item.Name</td>
-                <td>@(item.Active ? "Hoạt động" : "Ngừng")</td>
-                <td>
-                    <a asp-action="Edit" asp-route-id="@item.Id" class="btn btn-sm btn-warning">Sửa</a>
-                    <form asp-action="Delete" asp-route-id="@item.Id" method="post" style="display:inline">
-                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('Xóa danh mục này?')">Xóa</button>
-                    </form>
-                </td>
-            </tr>
-        }
-    </tbody>
-</table>

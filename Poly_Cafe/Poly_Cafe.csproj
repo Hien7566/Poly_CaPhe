@@ -1,23 +1,22 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net10.0</TargetFramework>
-    <Nullable>enable</Nullable>
+    <Nullable>disable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>
     <Content Remove="Views\Bill\Index.cshtml" />
-    <Content Remove="Views\Drink\Index.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
     <Compile Include="Views\Bill\Index.cshtml" />
-    <Compile Include="Views\Drink\Index.cshtml" />
   </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.3.9" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
   </ItemGroup>
 
   <ItemGroup>

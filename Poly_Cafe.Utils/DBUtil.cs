@@ -1,131 +1,117 @@
 ﻿using System;
 using System.Data;
-using System.Data.SqlClient;
+using Microsoft.Data.SqlClient;
+using System.Collections.Generic;
 
 namespace Poly_Cafe.Utils
 {
     public static class DBUtil
     {
-        // SỬA CHUỖI KẾT NỐI THEO MÁY BẠN
-        // Sửa: Bỏ dấu cách trong "TrustServerCertificate"
+        // ✅ Connection String chuẩn (đã fix TrustServerCertificate)
         private static readonly string connectionString =
-            "Data Source=HIENTB01233\\SQLEXPRESS01;Initial Catalog=Poly_CaPhe;Integrated Security=True;TrustServerCertificate=True;";
-        // Phương thức QueryDataTable (giữ nguyên)
-        public static DataTable QueryDataTable(string sql, List<object> parameters)
+            "Data Source=DESKTOP-DFA7S8M\\SQLEXPRESS;Initial Catalog=Poly_CaPhe;Integrated Security=True;Encrypt=True;TrustServerCertificate=True";
+
+        // 🔥 Hàm dùng chung để add parameters (TRÁNH LẶP CODE)
+        private static void AddParameters(SqlCommand cmd, List<object> parameters)
+        {
+            if (parameters == null) return;
+
+            for (int i = 0; i < parameters.Count; i++)
+            {
+                string paramName = $"@p{i}";
+                object value = parameters[i] ?? DBNull.Value;
+
+                if (value is string)
+                {
+                    SqlParameter p = new SqlParameter(paramName, SqlDbType.NVarChar)
+                    {
+                        Value = value
+                    };
+                    cmd.Parameters.Add(p);
+                }
+                else
+                {
+                    cmd.Parameters.AddWithValue(paramName, value);
+                }
+            }
+        }
+
+        // ✅ SELECT → DataTable
+        public static DataTable QueryDataTable(string sql, List<object> parameters = null)
         {
             DataTable dt = new DataTable();
+
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
+
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    if (parameters != null)
-                    {
-                        for (int i = 0; i < parameters.Count; i++)
-                        {
-                            string paramName = $"@p{i}";
-                            object value = parameters[i] ?? DBNull.Value;
+                    AddParameters(cmd, parameters);
 
-                            if (value is string)
-                            {
-                                SqlParameter p = new SqlParameter(paramName, SqlDbType.NVarChar);
-                                p.Value = value;
-                                cmd.Parameters.Add(p);
-                            }
-                            else
-                            {
-                                cmd.Parameters.AddWithValue(paramName, value);
-                            }
-                        }
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                    {
+                        adapter.Fill(dt);
                     }
-                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-                    adapter.Fill(dt);
                 }
             }
+
             return dt;
         }
 
-        // Phương thức ExecuteNonQuery (giữ nguyên)
-        public static int ExecuteNonQuery(string sql, List<object> parameters)
+        // ✅ INSERT / UPDATE / DELETE
+        public static int ExecuteNonQuery(string sql, List<object> parameters = null)
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
+
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    if (parameters != null)
-                    {
-                        for (int i = 0; i < parameters.Count; i++)
-                        {
-                            string paramName = $"@p{i}";
-                            object value = parameters[i] ?? DBNull.Value;
-
-                            if (value is string)
-                            {
-                                SqlParameter p = new SqlParameter(paramName, SqlDbType.NVarChar);
-                                p.Value = value;
-                                cmd.Parameters.Add(p);
-                            }
-                            else
-                            {
-                                cmd.Parameters.AddWithValue(paramName, value);
-                            }
-                        }
-                    }
+                    AddParameters(cmd, parameters);
                     return cmd.ExecuteNonQuery();
                 }
             }
         }
 
-        // Phương thức ExecuteScalar (giữ nguyên)
-        public static object ExecuteScalar(string sql, List<object> parameters)
+        // ✅ SELECT 1 giá trị
+        public static object ExecuteScalar(string sql, List<object> parameters = null)
         {
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
+
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
-                    if (parameters != null)
-                    {
-                        for (int i = 0; i < parameters.Count; i++)
-                        {
-                            string paramName = $"@p{i}";
-                            object value = parameters[i] ?? DBNull.Value;
-
-                            if (value is string)
-                            {
-                                SqlParameter p = new SqlParameter(paramName, SqlDbType.NVarChar);
-                                p.Value = value;
-                                cmd.Parameters.Add(p);
-                            }
-                            else
-                            {
-                                cmd.Parameters.AddWithValue(paramName, value);
-                            }
-                        }
-                    }
+                    AddParameters(cmd, parameters);
                     return cmd.ExecuteScalar();
                 }
             }
         }
 
-        // THÊM PHƯƠNG THỨC ExecuteQuery (để tương thích với UserDAL)
+        // ✅ TƯƠNG THÍCH CODE CŨ (UserDAL)
         public static DataTable ExecuteQuery(string sql, SqlParameter[] parameters = null)
         {
             DataTable dt = new DataTable();
+
             using (SqlConnection conn = new SqlConnection(connectionString))
             {
                 conn.Open();
+
                 using (SqlCommand cmd = new SqlCommand(sql, conn))
                 {
                     if (parameters != null)
                     {
                         cmd.Parameters.AddRange(parameters);
                     }
-                    SqlDataAdapter adapter = new SqlDataAdapter(cmd);
-                    adapter.Fill(dt);
+
+                    using (SqlDataAdapter adapter = new SqlDataAdapter(cmd))
+                    {
+                        adapter.Fill(dt);
+                    }
                 }
             }
+
             return dt;
         }
     }

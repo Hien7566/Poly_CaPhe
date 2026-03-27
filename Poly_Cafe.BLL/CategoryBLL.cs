@@ -1,5 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using Poly_Cafe.DAL;
 using Poly_Cafe.DTO;
 
@@ -7,43 +6,33 @@ namespace Poly_Cafe.BLL
 {
     public class CategoryBLL
     {
-        private CategoryDAL _dal = new CategoryDAL();
+        private readonly CategoryDAL _categoryDAL = new CategoryDAL();
 
         public List<CategoryDTO> GetAll()
         {
-            return _dal.GetAll();
+            return _categoryDAL.GetAll();
         }
 
         public CategoryDTO GetById(int id)
         {
-            if (id <= 0)
-                throw new Exception("ID không hợp lệ");
-            return _dal.GetById(id);
+            return _categoryDAL.GetById(id);
         }
 
-        public bool Insert(string name)
+        // Đã sửa tham số từ (string name) thành (CategoryDTO category) để khớp với Controller và DAL
+        public bool Insert(CategoryDTO category)
         {
-            if (string.IsNullOrWhiteSpace(name))
-                throw new Exception("Tên danh mục không được để trống");
-
-            return _dal.Insert(new CategoryDTO { Name = name });
+            return _categoryDAL.Insert(category);
         }
 
-        public bool Update(int id, string name)
+        // Đã sửa tham số từ (int id, string name) thành (CategoryDTO category)
+        public bool Update(CategoryDTO category)
         {
-            if (id <= 0)
-                throw new Exception("ID không hợp lệ");
-            if (string.IsNullOrWhiteSpace(name))
-                throw new Exception("Tên danh mục không được để trống");
-
-            return _dal.Update(new CategoryDTO { Id = id, Name = name });
+            return _categoryDAL.Update(category);
         }
 
         public bool Delete(int id)
         {
-            if (id <= 0)
-                throw new Exception("ID không hợp lệ");
-            return _dal.Delete(id);
+            return _categoryDAL.Delete(id);
         }
     }
 }
