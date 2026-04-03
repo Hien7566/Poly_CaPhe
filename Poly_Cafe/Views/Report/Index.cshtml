@@ -1,0 +1,256 @@
+﻿@{
+    ViewData["Title"] = "Báo cáo bán hàng";
+    Layout = "_Layout";
+}
+
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+@* Thư viện hỗ trợ xuất PDF *@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2pdf.js/0.10.1/html2pdf.bundle.min.js"></script>
+
+<style>
+    /* Bọc toàn trang */
+    .content-wrapper { font-family: 'Segoe UI', sans-serif; background-color: #f5ece4; padding: 30px; border-radius: 10px; min-height: 100vh; }
+    
+    /* Header & Buttons */
+    .page-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 25px; }
+    .page-title { font-size: 1.5rem; font-weight: 700; color: #4a3b32; margin: 0 0 5px 0; }
+    .page-subtitle { font-size: 0.9rem; color: #7a6f6f; margin: 0; }
+    
+    .action-buttons { display: flex; gap: 10px; }
+    .btn-outline { background: transparent; border: 1px solid #d1c7bd; color: #4a3b32; padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+    .btn-outline:hover { background: #e8ded3; }
+    .btn-fill { background: #4a3b32; border: 1px solid #4a3b32; color: #ffffff; padding: 8px 20px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; display: flex; align-items: center; gap: 8px; }
+    .btn-fill:hover { background: #312620; }
+
+    /* 3 Thẻ Thống Kê */
+    .summary-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; margin-bottom: 20px; }
+    .summary-card { background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); position: relative; }
+    .sc-title { color: #7a6f6f; font-size: 0.95rem; margin-bottom: 15px; font-weight: 500; }
+    .sc-value { font-size: 1.8rem; font-weight: 700; color: #2d3436; margin: 0 0 5px 0; }
+    .sc-trend { font-size: 0.85rem; color: #00b894; font-weight: 500; }
+    
+    .sc-icon { position: absolute; top: 25px; right: 25px; width: 40px; height: 40px; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.2rem; color: white; }
+    .icon-green { background-color: #00b894; }
+    .icon-blue { background-color: #4a69bd; }
+    .icon-gray { background-color: #b2bec3; }
+
+    /* Thanh Lọc Thời Gian */
+    .filter-bar { background: #ffffff; padding: 15px 25px; border-radius: 12px; margin-bottom: 25px; display: flex; align-items: center; gap: 15px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+    .filter-btn { background: #f5f6fa; border: none; color: #7a6f6f; padding: 8px 15px; border-radius: 8px; font-weight: 600; cursor: pointer; transition: 0.2s; }
+    .filter-btn.active { background: #4a3b32; color: #ffffff; }
+    .date-input { border: 1px solid #d1d8e0; padding: 8px 15px; border-radius: 8px; color: #4a3b32; outline: none; }
+    .date-separator { color: #7a6f6f; font-weight: 600; font-size: 0.9rem; text-transform: uppercase; }
+
+    /* Lưới Biểu Đồ */
+    .chart-grid { display: grid; grid-template-columns: 2fr 1fr; gap: 20px; margin-bottom: 20px; }
+    .chart-card { background: #ffffff; padding: 25px; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); }
+    .chart-title { font-size: 1.1rem; font-weight: 700; color: #4a3b32; margin-bottom: 20px; }
+    
+    /* Bảng Dữ Liệu */
+    .table-card { background: #ffffff; border-radius: 12px; box-shadow: 0 2px 10px rgba(0,0,0,0.02); overflow: hidden; margin-top: 20px; }
+    .custom-table { width: 100%; border-collapse: collapse; }
+    .custom-table th { background: #fdfaf5; padding: 15px 20px; text-align: left; font-size: 0.85rem; text-transform: uppercase; color: #4a3b32; font-weight: 700; border-bottom: 2px solid #f0ebe4; }
+    .custom-table td { padding: 15px 20px; border-bottom: 1px solid #f9f9f9; color: #4a3b32; font-size: 0.9rem; }
+
+    /* FIX: Thêm @@ để thoát ký tự media trong Razor */
+    @@media print {
+        body * { visibility: hidden; }
+        #report-content, #report-content * { visibility: visible; }
+        #report-content { position: absolute; left: 0; top: 0; width: 100%; background: white !important; }
+        .action-buttons, .filter-bar { display: none !important; }
+    }
+</style>
+
+<div class="content-wrapper" id="report-content">
+    <div class="page-header">
+        <div>
+            <h1 class="page-title">Báo cáo bán hàng</h1>
+            <p class="page-subtitle">Phân tích hiệu suất bán hàng và xu hướng</p>
+        </div>
+        <div class="action-buttons">
+            <button class="btn-outline" id="btnExportCSV"><i class="fas fa-file-csv"></i> Xuất CSV</button>
+            <button class="btn-outline" id="btnExportPDF"><i class="fas fa-file-pdf"></i> Xuất PDF</button>
+            <button class="btn-fill" onclick="window.print()"><i class="fas fa-print"></i> In</button>
+        </div>
+    </div>
+
+    @* ... (Giữ nguyên phần nội dung thẻ thống kê, filter bar và biểu đồ như cũ) ... *@
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="sc-title">Tổng doanh thu</div>
+            <h3 class="sc-value">15,545,000 ₫</h3>
+            <div class="sc-trend">Tăng 15,3% so với kỳ trước.</div>
+            <div class="sc-icon icon-green"><i class="fas fa-dollar-sign"></i></div>
+        </div>
+        <div class="summary-card">
+            <div class="sc-title">Tổng số đơn hàng</div>
+            <h3 class="sc-value">547</h3>
+            <div class="sc-trend" style="color: #0984e3;">Tăng 8,7% so với kỳ trước.</div>
+            <div class="sc-icon icon-blue"><i class="fas fa-box"></i></div>
+        </div>
+        <div class="summary-card">
+            <div class="sc-title">Giá trị đơn hàng trung bình</div>
+            <h3 class="sc-value">28,420 ₫</h3>
+            <div class="sc-trend">Tăng 3,2% so với kỳ trước.</div>
+            <div class="sc-icon icon-gray"><i class="fas fa-chart-line"></i></div>
+        </div>
+    </div>
+
+    <div class="filter-bar">
+        <i class="far fa-calendar-alt" style="color: #7a6f6f; font-size: 1.2rem;"></i>
+        <button class="filter-btn">Hôm nay</button>
+        <button class="filter-btn active">Tuần</button>
+        <button class="filter-btn">Tháng</button>
+        <button class="filter-btn">Năm</button>
+        
+        <input type="date" class="date-input" style="margin-left: auto;">
+        <span class="date-separator">ĐẾN</span>
+        <input type="date" class="date-input">
+    </div>
+
+    <div class="chart-grid">
+        <div class="chart-card">
+            <h3 class="chart-title">Xu hướng bán hàng hàng ngày</h3>
+            <canvas id="lineChart" height="100"></canvas>
+        </div>
+        <div class="chart-card">
+            <h3 class="chart-title">Doanh số theo danh mục</h3>
+            <canvas id="pieChart" height="200"></canvas>
+        </div>
+    </div>
+
+    <div class="chart-card">
+        <h3 class="chart-title">Sản phẩm bán chạy nhất</h3>
+        <canvas id="barChart" height="80"></canvas>
+    </div>
+
+    <div class="table-card">
+        <div style="padding: 20px 25px;">
+            <h3 class="chart-title" style="margin: 0;">Các giao dịch gần đây</h3>
+        </div>
+        <table class="custom-table" id="dataTable">
+            <thead>
+                <tr>
+                    <th>Mã số hóa đơn</th>
+                    <th>Các sản phẩm</th>
+                    <th>Tổng cộng</th>
+                    <th>Thu ngân</th>
+                    <th>Ngày & giờ</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td style="font-weight: 600;">INV-001</td>
+                    <td>Cà phê sữa x2, Croissant x1</td>
+                    <td style="font-weight: 600;">80,000 ₫</td>
+                    <td>Sarah Thu ngân</td>
+                    <td style="color: #7a6f6f;">2026-03-27 09:15</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600;">INV-002</td>
+                    <td>Bạc xỉu x1, Bánh Tiramisu x2</td>
+                    <td style="font-weight: 600;">105,000 ₫</td>
+                    <td>Mike Cashier</td>
+                    <td style="color: #7a6f6f;">2026-03-27 09:30</td>
+                </tr>
+                <tr>
+                    <td style="font-weight: 600;">INV-003</td>
+                    <td>Espresso x3</td>
+                    <td style="font-weight: 600;">105,000 ₫</td>
+                    <td>Sarah Thu ngân</td>
+                    <td style="color: #7a6f6f;">2026-03-27 09:45</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        // --- Code khởi tạo Chart (Giữ nguyên như cũ) ---
+        Chart.defaults.font.family = "'Segoe UI', sans-serif";
+        Chart.defaults.color = '#7a6f6f';
+
+        var ctxLine = document.getElementById('lineChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: ['Nov 22', 'Nov 23', 'Nov 24', 'Nov 25', 'Nov 26', 'Nov 27', 'Nov 28'],
+                datasets: [{
+                    label: 'Doanh thu',
+                    data: [1200, 1800, 1500, 2100, 2800, 3200, 2700],
+                    borderColor: '#4a3b32',
+                    borderWidth: 3,
+                    pointBackgroundColor: '#ffffff',
+                    pointBorderColor: '#4a3b32',
+                    pointBorderWidth: 2,
+                    pointRadius: 4,
+                    tension: 0.4,
+                    fill: false
+                }]
+            },
+            options: { responsive: true, plugins: { legend: { display: false } } }
+        });
+
+        var ctxPie = document.getElementById('pieChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'pie',
+            data: {
+                labels: ['Coffee', 'Pastries', 'Beverages', 'Snacks'],
+                datasets: [{
+                    data: [57, 21, 14, 8],
+                    backgroundColor: ['#4a3b32', '#8d6e63', '#bcaaa4', '#d7ccc8'],
+                    borderWidth: 2,
+                    borderColor: '#ffffff'
+                }]
+            },
+            options: { responsive: true }
+        });
+
+        var ctxBar = document.getElementById('barChart').getContext('2d');
+        new Chart(ctxBar, {
+            type: 'bar',
+            data: {
+                labels: ['Cà phê sữa', 'Bạc xỉu', 'Trà đào', 'Trà sữa', 'Sinh tố bơ'],
+                datasets: [
+                    { label: 'Doanh thu (₫)', data: [2000000, 1500000, 900000, 1000000, 1100000], backgroundColor: '#a68f86', borderRadius: 4 },
+                    { label: 'Số lượng bán', data: [450, 350, 200, 150, 100], backgroundColor: '#4a3b32', borderRadius: 4 }
+                ]
+            },
+            options: { responsive: true }
+        });
+
+        // --- CHỨC NĂNG XUẤT CSV ---
+        document.getElementById('btnExportCSV').addEventListener('click', function() {
+            let csv = [];
+            const rows = document.querySelectorAll("#dataTable tr");
+            for (let i = 0; i < rows.length; i++) {
+                let row = [], cols = rows[i].querySelectorAll("td, th");
+                for (let j = 0; j < cols.length; j++) {
+                    let data = cols[j].innerText.replace(/,/g, ".").trim();
+                    row.push('"' + data + '"');
+                }
+                csv.push(row.join(","));
+            }
+            const csvString = csv.join("\n");
+            const blob = new Blob(['\uFEFF' + csvString], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement("a");
+            link.href = URL.createObjectURL(blob);
+            link.download = "Bao_cao_Poly_Coffee.csv";
+            link.click();
+        });
+
+        // --- CHỨC NĂNG XUẤT PDF ---
+        document.getElementById('btnExportPDF').addEventListener('click', function() {
+            const element = document.getElementById('report-content');
+            const opt = {
+                margin: 5,
+                filename: 'Bao_cao_Poly_Coffee.pdf',
+                image: { type: 'jpeg', quality: 0.98 },
+                html2canvas: { scale: 2, useCORS: true },
+                jsPDF: { unit: 'mm', format: 'a4', orientation: 'portrait' }
+            };
+            html2pdf().set(opt).from(element).save();
+        });
+    </script>
+}

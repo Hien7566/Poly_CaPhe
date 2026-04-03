@@ -1,0 +1,591 @@
+﻿@using Poly_Cafe.DTO
+@model IEnumerable<DrinkDTO>
+
+@{
+    ViewData["Title"] = "Bán hàng - Poly Coffee";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+    :root {
+        --poly-brown: #4A3933;
+        --poly-orange: #F5A623;
+        --poly-bg: #FDF9F4;
+        --poly-light: #F8F9FA;
+    }
+
+    .pos-container {
+        display: flex;
+        background-color: var(--poly-bg);
+        margin: -20px;
+        height: 100vh;
+        font-family: 'Segoe UI', sans-serif;
+    }
+
+    .menu-panel {
+        flex: 8;
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        overflow-y: auto;
+    }
+
+    .search-input {
+        width: 100%;
+        max-width: 600px;
+        padding: 15px 25px 15px 50px;
+        border-radius: 25px;
+        border: 1px solid #E0E0E0;
+        background: white url('https://cdn-icons-png.flaticon.com/512/149/149852.png') no-repeat 20px center;
+        background-size: 20px;
+        margin-bottom: 25px;
+    }
+
+    .category-bar {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+        margin-bottom: 25px;
+        padding: 5px 2px;
+    }
+
+    .cat-btn {
+        background: white;
+        border: 1px solid #EEE;
+        padding: 10px 24px;
+        border-radius: 12px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: 0.3s;
+    }
+
+        .cat-btn.active {
+            background: var(--poly-brown);
+            color: white;
+            border-color: var(--poly-brown);
+        }
+
+    .menu-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 20px;
+    }
+
+    .product-card {
+        background: white;
+        border-radius: 20px;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+    }
+
+    .img-container {
+        height: 130px;
+        border-radius: 15px;
+        overflow: hidden;
+        margin-bottom: 10px;
+    }
+
+        .img-container img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+    .product-price {
+        color: var(--poly-orange);
+        font-weight: 800;
+    }
+
+    .order-panel {
+        flex: 3;
+        background: white;
+        border-left: 1px solid #EEE;
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+    }
+
+    .cart-list {
+        flex: 1;
+        overflow-y: auto;
+    }
+
+    .payment-grid {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+        margin: 20px 0;
+    }
+
+    .pay-box {
+        border: 1px solid #EEE;
+        border-radius: 15px;
+        padding: 15px 5px;
+        text-align: center;
+        cursor: pointer;
+        background: #FDFBFA;
+        transition: 0.3s;
+    }
+
+        .pay-box.active {
+            border: 2px solid var(--poly-brown);
+            background: #F4ECE8;
+        }
+
+        .pay-box i {
+            display: block;
+            font-size: 1.2rem;
+            margin-bottom: 5px;
+        }
+
+        .pay-box span {
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+    .btn-checkout {
+        width: 100%;
+        background: var(--poly-brown);
+        color: white;
+        border: none;
+        padding: 18px;
+        border-radius: 15px;
+        font-weight: 700;
+        font-size: 1.1rem;
+    }
+
+    .btn-outline-brown {
+        color: var(--poly-brown);
+        border-color: var(--poly-brown);
+    }
+
+    .btn-check:checked + .btn-outline-brown {
+        background-color: var(--poly-brown);
+        color: white;
+    }
+
+    .qty-input {
+        width: 60px;
+        border: 1px solid #DDD;
+        border-radius: 5px;
+        text-align: center;
+        font-weight: bold;
+    }
+</style>
+
+<div class="pos-container">
+    <div class="menu-panel">
+        <input type="text" class="search-input" placeholder="Tìm món nhanh..." onkeyup="searchDish(this)">
+        <h4 class="fw-bold mb-4" style="color: var(--poly-brown)"><i class="fas fa-coffee"></i> THỰC ĐƠN POLY COFFEE</h4>
+
+        <div class="category-bar">
+            <button class="cat-btn active" onclick="filterCategory('all', this)">Tất cả</button>
+            <button class="cat-btn" onclick="filterCategory('1', this)">Cà phê</button>
+            <button class="cat-btn" onclick="filterCategory('2', this)">Trà</button>
+            <button class="cat-btn" onclick="filterCategory('3', this)">Đá xay</button>
+            <button class="cat-btn" onclick="filterCategory('4', this)">Sinh tố</button>
+            <button class="cat-btn" onclick="filterCategory('6', this)">Bánh ngọt</button>
+        </div>
+
+        <div class="menu-grid" id="menuGrid">
+            @foreach (var item in Model)
+            {
+                <div class="product-card item-dish" data-category="@item.CategoryId" data-name="@item.Name.ToLower()"
+                     onclick="handleItemClick('@item.Id', '@item.Name', @item.Price, '@item.CategoryId')">
+                    <div class="img-container"><img src="~/image/@item.Image" onerror="this.src='/image/favicon.ico'" /></div>
+                    <div class="product-name fw-bold">@item.Name</div>
+                    <div class="product-price">@item.Price.ToString("N0")đ</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="order-panel">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h5 class="fw-bold m-0">Chi tiết đơn hàng</h5>
+            <button class="btn btn-sm text-danger border" onclick="clearCart()">Xóa</button>
+        </div>
+
+        <div id="cartBody" class="cart-list"></div>
+
+        <div class="border-top pt-3">
+            <div class="d-flex justify-content-between h4 fw-bold mb-3">
+                <span>Tổng cộng:</span>
+                <span id="totalDisplay" class="text-danger">0đ</span>
+            </div>
+
+            <div class="d-flex gap-2">
+                <button class="btn btn-outline-dark fw-bold py-3 flex-fill" onclick="openProvisionalModal()" style="border-radius: 15px;">
+                    <i class="fas fa-file-invoice"></i> TẠM TÍNH
+                </button>
+                <button class="btn-checkout flex-fill" onclick="openPaymentModal()">
+                    THANH TOÁN
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="provisionalModal" tabindex="-1">
+    <div class="modal-dialog modal-sm modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
+            <div class="modal-header border-0 pb-0">
+                <h6 class="fw-bold m-0">Xem trước hóa đơn</h6>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div id="billPreviewContent" class="p-2" style="font-family: 'Courier New', Courier, monospace; font-size: 0.85rem; line-height: 1.4;">
+                </div>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn btn-light flex-fill fw-bold" onclick="alert('Đã lưu đơn nháp!')">LƯU</button>
+                <button class="btn btn-dark flex-fill fw-bold" onclick="window.print()"><i class="fas fa-print"></i> IN BILL</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="paymentModal" data-bs-backdrop="static" tabindex="-1">
+    <div class="modal-dialog modal-lg modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4 overflow-hidden shadow-lg">
+            <div class="modal-body p-0 d-flex">
+                <div class="col-5 bg-light p-4 d-flex flex-column align-items-center justify-content-center border-end text-center" id="paymentViewLeft">
+                </div>
+
+                <div class="col-7 p-4 bg-white">
+                    <h5 class="fw-bold mb-4">Xác nhận thanh toán</h5>
+
+                    <div class="payment-grid mb-4">
+                        <div class="pay-box active" id="pay-1" onclick="changePaymentMethod(1)">
+                            <i class="fas fa-money-bill-alt"></i><span>Tiền mặt</span>
+                        </div>
+                        <div class="pay-box" id="pay-2" onclick="changePaymentMethod(2)">
+                            <i class="fas fa-credit-card"></i><span>Thẻ</span>
+                        </div>
+                        <div class="pay-box" id="pay-3" onclick="changePaymentMethod(3)">
+                            <i class="fas fa-qrcode"></i><span>Chuyển khoản</span>
+                        </div>
+                    </div>
+
+                    <div class="p-3 rounded-3 bg-light mb-4">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Số tiền cần thu:</span>
+                            <span class="h4 fw-bold text-danger m-0" id="modalTotalShow">0đ</span>
+                        </div>
+
+                        <div id="cashLogic">
+                            <hr>
+                            <div class="d-flex justify-content-between align-items-center mb-2">
+                                <span class="fw-bold">Khách đưa:</span>
+                                <input type="number" id="cashInput" class="form-control w-50 text-end fw-bold border-success" onkeyup="calcRefund()">
+                            </div>
+                            <div class="d-flex justify-content-between">
+                                <span class="text-muted">Tiền thừa:</span>
+                                <span class="fw-bold text-primary" id="refundShow">0đ</span>
+                            </div>
+                        </div>
+
+                        <div id="statusLogic" style="display:none;" class="text-center py-3">
+                            <div class="spinner-border spinner-border-sm text-primary" id="paySpinner"></div>
+                            <span class="ms-2 fw-bold text-muted" id="statusMsg">Đang chờ xử lý...</span>
+                        </div>
+                    </div>
+
+                    <div class="d-flex gap-2">
+                        <button class="btn btn-light flex-fill p-3 fw-bold" data-bs-dismiss="modal">HỦY</button>
+                        <button class="btn btn-success flex-fill p-3 fw-bold" id="btnConfirmFinal" onclick="finalCheckout()" disabled>XÁC NHẬN</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="customizeModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 rounded-4">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="modalName">Tên món</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3 d-flex justify-content-between align-items-center bg-light p-2 rounded">
+                    <span class="fw-bold">Số lượng:</span>
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-dark" onclick="updateModalQty(-1)">-</button>
+                        <input type="number" id="modalQty" value="1" min="1" class="qty-input" onfocus="this.select()">
+                        <button class="btn btn-sm btn-dark" onclick="updateModalQty(1)">+</button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold small mb-2 d-block">Kích cỡ (Size):</label>
+                    <div class="btn-group w-100">
+                        <input type="radio" class="btn-check" name="size" id="sizeS" value="S" checked><label class="btn btn-outline-brown" for="sizeS">Size S</label>
+                        <input type="radio" class="btn-check" name="size" id="sizeM" value="M"><label class="btn btn-outline-brown" for="sizeM">Size M</label>
+                        <input type="radio" class="btn-check" name="size" id="sizeL" value="L"><label class="btn btn-outline-brown" for="sizeL">Size L</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold small mb-2 d-block">Mức đá:</label>
+                    <div class="btn-group w-100">
+                        <input type="radio" class="btn-check" name="ice" id="ice30" value="30%"><label class="btn btn-outline-brown" for="ice30">30%</label>
+                        <input type="radio" class="btn-check" name="ice" id="ice50" value="50%" checked><label class="btn btn-outline-brown" for="ice50">50%</label>
+                        <input type="radio" class="btn-check" name="ice" id="ice70" value="70%"><label class="btn btn-outline-brown" for="ice70">70%</label>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="fw-bold small mb-2 d-block">Mức đường:</label>
+                    <div class="btn-group w-100">
+                        <input type="radio" class="btn-check" name="sugar" id="sugar30" value="30%"><label class="btn btn-outline-brown" for="sugar30">30%</label>
+                        <input type="radio" class="btn-check" name="sugar" id="sugar50" value="50%" checked><label class="btn btn-outline-brown" for="sugar50">50%</label>
+                        <input type="radio" class="btn-check" name="sugar" id="sugar70" value="70%"><label class="btn btn-outline-brown" for="sugar70">70%</label>
+                    </div>
+                </div>
+
+                <textarea id="modalNote" class="form-control" rows="2" placeholder="Ghi chú thêm (ít sữa, không bọt...)"></textarea>
+            </div>
+            <div class="modal-footer border-0">
+                <button class="btn-checkout" onclick="confirmToCart()">THÊM VÀO ĐƠN</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let cart = [];
+    let tempItem = null;
+    let selectedMethod = 1;
+
+    // --- LOGIC GIỎ HÀNG (GIỮ NGUYÊN CỦA ÔNG) ---
+    function filterCategory(catId, btn) {
+        document.querySelectorAll('.cat-btn').forEach(b => b.classList.remove('active'));
+        btn.classList.add('active');
+        document.querySelectorAll('.item-dish').forEach(item => {
+            const itemCat = item.getAttribute('data-category');
+            item.style.display = (catId === 'all' || itemCat == catId) ? "block" : "none";
+        });
+    }
+
+    function handleItemClick(id, name, price, catId) {
+        tempItem = { id, name, price, catId };
+        if (catId == '6') { addToCart(id, name, price, 'Bánh ngọt', 1); }
+        else {
+            document.getElementById('modalName').innerText = name;
+            document.getElementById('modalQty').value = 1;
+            document.getElementById('modalNote').value = '';
+            new bootstrap.Modal(document.getElementById('customizeModal')).show();
+        }
+    }
+
+    function addToCart(id, name, price, opt, qty) {
+        const key = id + opt;
+        let x = cart.find(i => i.key === key);
+        if (x) x.qty += qty;
+        else cart.push({ key, id, name, price, opt, qty });
+        renderCart();
+    }
+
+    function renderCart() {
+        let h = ''; let t = 0;
+        cart.forEach((item, i) => {
+            t += item.price * item.qty;
+            h += `<div class="cart-item border-bottom py-2">
+                <div class="d-flex justify-content-between fw-bold"><span>${item.name}</span><span>${(item.price * item.qty).toLocaleString()}đ</span></div>
+                <div class="small text-muted mb-1">${item.opt}</div>
+                <div class="d-flex justify-content-between align-items-center">
+                    <div class="d-flex align-items-center gap-2">
+                        <button class="btn btn-sm btn-light border" onclick="changeQty(${i},-1)">-</button>
+                        <b>${item.qty}</b>
+                        <button class="btn btn-sm btn-light border" onclick="changeQty(${i},1)">+</button>
+                    </div>
+                    <i class="fas fa-trash text-danger" onclick="cart.splice(${i},1);renderCart()" style="cursor:pointer"></i>
+                </div>
+            </div>`;
+        });
+        document.getElementById('cartBody').innerHTML = h || '<p class="text-center mt-5 text-muted">Trống</p>';
+        document.getElementById('totalDisplay').innerText = t.toLocaleString() + 'đ';
+        return t;
+    }
+
+    function changeQty(i, v) { cart[i].qty += v; if (cart[i].qty <= 0) cart.splice(i, 1); renderCart(); }
+    function clearCart() { if (confirm("Xóa toàn bộ đơn hàng?")) { cart = []; renderCart(); } }
+
+    // --- LOGIC MỚI: TẠM TÍNH (THÔNG TIN ĐẦY ĐỦ) ---
+    function openProvisionalModal() {
+        if (cart.length === 0) return alert("Chưa có món nào!");
+        let t = renderCart();
+        let now = new Date();
+        let timeStr = now.getHours() + ":" + (now.getMinutes()<10?'0':'') + now.getMinutes() + " " + now.toLocaleDateString();
+
+        let html = `
+            <div class="text-center">
+                <h6 class="fw-bold mb-0">POLY COFFEE</h6>
+                <small>Đường số 1, TP. Biên Hòa</small><br>
+                <small>Hotline: 0909.123.456</small>
+            </div>
+            <hr class="my-2" style="border-style: dashed;">
+            <div class="d-flex justify-content-between mb-2" style="font-size: 0.7rem;">
+                <span>Mã: #HD${Math.floor(1000 + Math.random() * 9000)}</span>
+                <span>${timeStr}</span>
+            </div>`;
+
+        cart.forEach(item => {
+            html += `
+                <div class="mb-1">
+                    <div class="d-flex justify-content-between fw-bold">
+                        <span>${item.qty} x ${item.name}</span>
+                        <span>${(item.price * item.qty).toLocaleString()}</span>
+                    </div>
+                    <div style="font-size: 0.7rem; color: #666; margin-left: 15px;">- ${item.opt}</div>
+                </div>`;
+        });
+
+        html += `
+            <hr class="my-2" style="border-style: dashed;">
+            <div class="d-flex justify-content-between fw-bold h6">
+                <span>TỔNG CỘNG:</span>
+                <span>${t.toLocaleString()}đ</span>
+            </div>
+            <div class="text-center mt-3">
+                <small><i>Cảm ơn quý khách. Hẹn gặp lại!</i></small>
+            </div>`;
+
+        document.getElementById('billPreviewContent').innerHTML = html;
+        new bootstrap.Modal(document.getElementById('provisionalModal')).show();
+    }
+
+    // --- LOGIC MỚI: THANH TOÁN (THEO HÌNH ẢNH) ---
+    function openPaymentModal() {
+        if (cart.length === 0) return alert("Chưa có món nào!");
+        let t = renderCart();
+        document.getElementById('modalTotalShow').innerText = t.toLocaleString() + 'đ';
+        changePaymentMethod(1);
+        new bootstrap.Modal(document.getElementById('paymentModal')).show();
+    }
+
+    function changePaymentMethod(id) {
+        selectedMethod = id;
+        document.querySelectorAll('.pay-box').forEach(b => b.classList.remove('active'));
+        document.getElementById('pay-' + id).classList.add('active');
+
+        const leftView = document.getElementById('paymentViewLeft');
+        const cashLogic = document.getElementById('cashLogic');
+        const statusLogic = document.getElementById('statusLogic');
+        const btnConfirm = document.getElementById('btnConfirmFinal');
+        const total = renderCart();
+
+        btnConfirm.disabled = true;
+        statusLogic.style.display = 'none';
+        cashLogic.style.display = 'none';
+
+        if (id === 1) { // TIỀN MẶT (image_cb819c.png)
+            leftView.innerHTML = `<i class="fas fa-money-bill-wave fa-5x text-success mb-3"></i><h5 class="fw-bold">TIỀN MẶT</h5>`;
+            cashLogic.style.display = 'block';
+            document.getElementById('cashInput').value = total;
+            calcRefund();
+            btnConfirm.disabled = false;
+        }
+        else if (id === 2) { // THẺ
+            leftView.innerHTML = `<i class="fas fa-credit-card fa-5x text-primary mb-3"></i><h5 class="fw-bold">QUẸT THẺ POS</h5><p class="small text-muted">Vui lòng đưa thẻ vào máy...</p>`;
+            statusLogic.style.display = 'block';
+            document.getElementById('statusMsg').innerText = "Đang chờ kết nối...";
+            document.getElementById('paySpinner').style.display = 'inline-block';
+
+            setTimeout(() => {
+                document.getElementById('statusMsg').innerHTML = "<span class='text-success'><i class='fas fa-check-circle'></i> Đã nhận tín hiệu thẻ!</span>";
+                document.getElementById('paySpinner').style.display = 'none';
+                btnConfirm.disabled = false;
+            }, 3000);
+        }
+        else if (id === 3) { // CHUYỂN KHOẢN (image_ca9c9a.jpg)
+            leftView.innerHTML = `
+                <img src="https://api.qrserver.com/v1/create-qr-code/?size=180x180&data=STK:04109283001-NganHang:TPBank" style="width:180px; border-radius:10px;" class="shadow-sm mb-3">
+                <div class="small fw-bold text-dark">TPBANK: 04109283001</div>
+                <div class="small text-muted">Chủ TK: NGUYEN VAN A</div>`;
+            statusLogic.style.display = 'block';
+            document.getElementById('statusMsg').innerText = "Chờ khách quét QR...";
+            document.getElementById('paySpinner').style.display = 'inline-block';
+
+            setTimeout(() => {
+                document.getElementById('statusMsg').innerHTML = "<span class='text-success'><i class='fas fa-check-circle'></i> Đã nhận thanh toán!</span>";
+                document.getElementById('paySpinner').style.display = 'none';
+                btnConfirm.disabled = false;
+            }, 4000);
+        }
+    }
+
+    function calcRefund() {
+        const total = renderCart();
+        const input = parseInt(document.getElementById('cashInput').value) || 0;
+        let r = input - total;
+        document.getElementById('refundShow').innerText = (r > 0 ? r : 0).toLocaleString() + 'đ';
+    }
+
+       function finalCheckout() {
+        if (cart.length === 0) return;
+
+        // 1. Chuẩn bị dữ liệu để gửi về Server
+        const orderData = {
+            PaymentMethod: selectedMethod == 1 ? "Tiền mặt" : (selectedMethod == 2 ? "Thẻ" : "Chuyển khoản"),
+            Total: renderCart(),
+            // Map danh sách món trong giỏ hàng thành chi tiết hóa đơn
+            Details: cart.map(item => ({
+                DrinkId: item.id,
+                Quantity: item.qty,
+                Price: item.price,
+                Note: item.opt
+            }))
+        };
+
+        // 2. Dùng AJAX gửi dữ liệu về Controller
+        $.ajax({
+            url: '/Order/CreateOrder', // Đường dẫn tới hàm xử lý ở Controller
+            type: 'POST',
+            contentType: 'application/json',
+            data: JSON.stringify(orderData),
+            success: function (response) {
+                if (response.success) {
+                    alert("Thanh toán thành công! Mã đơn: " + response.orderCode);
+                    cart = []; // Xóa giỏ hàng
+                    renderCart();
+                    bootstrap.Modal.getInstance(document.getElementById('paymentModal')).hide();
+
+                    // Chuyển hướng hoặc tải lại để thấy đơn mới
+                    window.location.href = "/Order/Index";
+                } else {
+                    alert("Lỗi: " + response.message);
+                }
+            },
+            error: function () {
+                alert("Không thể kết nối đến máy chủ để lưu đơn hàng!");
+            }
+        });
+    }
+
+    // Các hàm modal qty giữ nguyên...
+    function updateModalQty(val) {
+        const input = document.getElementById('modalQty');
+        let q = parseInt(input.value) + val;
+        if (q >= 1) input.value = q;
+    }
+
+    function confirmToCart() {
+        const size = document.querySelector('input[name="size"]:checked').value;
+        const ice = document.querySelector('input[name="ice"]:checked').value;
+        const sugar = document.querySelector('input[name="sugar"]:checked').value;
+        const note = document.getElementById('modalNote').value;
+        let qty = parseInt(document.getElementById('modalQty').value) || 1;
+        const opt = `Size ${size}, ${ice} đá, ${sugar} đường ${note ? '| ' + note : ''}`;
+        addToCart(tempItem.id, tempItem.name, tempItem.price, opt, qty);
+        bootstrap.Modal.getInstance(document.getElementById('customizeModal')).hide();
+    }
+
+    function searchDish(input) {
+        let f = input.value.toLowerCase();
+        document.querySelectorAll('.item-dish').forEach(d => d.style.display = d.getAttribute('data-name').includes(f) ? "block" : "none");
+    }
+</script>

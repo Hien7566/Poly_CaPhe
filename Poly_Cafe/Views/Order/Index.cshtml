@@ -1,0 +1,162 @@
+﻿@model IEnumerable<Poly_Cafe.DTO.BillDTO>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+    Layout = "_Layout";
+    // Lấy status từ URL để biết đang ở Tab nào
+    var currentStatus = Context.Request.Query["status"].ToString();
+}
+
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css">
+
+<style>
+    body { background-color: #F8F9FA; font-family: 'Inter', sans-serif; }
+    :root { --poly-brown: #4A3933; --poly-gold: #D4A373; --poly-danger: #dc3545; }
+
+    .main-card { border: none; border-radius: 16px; box-shadow: 0 4px 20px rgba(0,0,0,0.05); background: #fff; }
+    .header-section { padding: 25px; border-bottom: 1px solid #eee; }
+
+    /* Tab Switcher xịn xò */
+    .nav-tabs-custom { background: #F3F4F6; padding: 5px; border-radius: 12px; display: inline-flex; gap: 5px; }
+    .nav-link-custom { 
+        padding: 8px 20px; border-radius: 10px; font-size: 0.85rem; font-weight: 600;
+        color: #6B7280; text-decoration: none; transition: 0.3s;
+    }
+    .nav-link-custom.active { background: #fff; color: var(--poly-brown); shadow: 0 2px 4px rgba(0,0,0,0.05); }
+    .nav-link-custom.active-danger { background: #FEE2E2; color: var(--poly-danger); }
+
+    /* Badge trạng thái */
+    .stt-badge { padding: 6px 12px; border-radius: 8px; font-weight: 600; font-size: 0.75rem; }
+    .stt-pending { background: #FEF3C7; color: #92400E; }
+    .stt-completed { background: #D1FAE5; color: #065F46; }
+    .stt-cancelled { background: #FEE2E2; color: #991B1B; } /* Màu cho đơn hủy */
+
+    /* Nút thao tác */
+    .btn-action { width: 32px; height: 32px; display: inline-flex; align-items: center; justify-content: center; border-radius: 8px; border: none; transition: 0.2s; }
+    .btn-view { background: #F3F4F6; color: var(--poly-brown); }
+    .btn-approve { background: #D1FAE5; color: #059669; }
+    .btn-cancel { background: #FEE2E2; color: #DC2626; }
+    .btn-action:hover { opacity: 0.8; transform: translateY(-1px); }
+</style>
+
+<div class="container-fluid py-4 px-4">
+    <div class="mb-4">
+        <div class="nav-tabs-custom">
+            <a href="/Order" class="nav-link-custom @(string.IsNullOrEmpty(currentStatus) ? "active" : "")">
+                <i class="bi bi-shop me-1"></i> Đang kinh doanh
+            </a>
+            <a href="/Order?status=-1" class="nav-link-custom @(currentStatus == "-1" ? "active-danger" : "")">
+                <i class="bi bi-trash3 me-1"></i> Đơn đã hủy
+            </a>
+        </div>
+    </div>
+
+    <div class="card main-card">
+        <div class="header-section d-flex justify-content-between align-items-center">
+            <div>
+                <h4 class="fw-bold mb-1" style="color: var(--poly-brown);">
+                    @(currentStatus == "-1" ? "Danh sách đơn đã hủy" : "Quản lý đơn hàng")
+                </h4>
+                <p class="text-muted small mb-0">Hệ thống Poly Coffee - Biên Hòa, Đồng Nai</p>
+            </div>
+            
+            <div class="search-box d-flex align-items-center border rounded-3 px-3 py-2 bg-light" style="min-width: 300px;">
+                <i class="bi bi-search text-muted me-2"></i>
+                <input type="text" id="orderSearch" class="border-0 bg-transparent outline-none w-100" placeholder="Tìm mã đơn..." onkeyup="filterOrders()">
+            </div>
+        </div>
+
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table align-middle mb-0" id="orderTable">
+                    <thead class="bg-light">
+                        <tr>
+                            <th class="ps-4">Mã đơn</th>
+                            <th>Ngày đặt</th>
+                            <th>Nhân viên</th>
+                            <th>Tổng cộng</th>
+                            <th>Trạng thái</th>
+                            <th class="text-end pe-4">Thao tác</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        @foreach (var item in Model) {
+                            <tr>
+                                <td class="ps-4 fw-bold">#@item.Code</td>
+                                <td class="text-muted small">@item.CreatedAt?.ToString("dd/MM HH:mm")</td>
+                                <td class="small fw-semibold">@item.UserName</td>
+                                <td class="fw-bold text-dark">@item.FinalTotal.ToString("N0")đ</td>
+                                <td>
+                                    @if (item.Status == "0") {
+                                        <span class="stt-badge stt-pending">Đang xử lý</span>
+                                    } else if (item.Status == "1") {
+                                        <span class="stt-badge stt-completed">Hoàn tất</span>
+                                    } else {
+                                        <span class="stt-badge stt-cancelled">Đã hủy</span>
+                                    }
+                                </td>
+                                <td class="text-end pe-4">
+                                    <button onclick="viewDetails(@item.Id)" class="btn-action btn-view" title="Xem bill">
+                                        <i class="bi bi-eye"></i>
+                                    </button>
+
+                                    @if(item.Status == "0") {
+                                        <button onclick="updateStatus(@item.Id, '1')" class="btn-action btn-approve ms-1" title="Duyệt đơn">
+                                            <i class="bi bi-check-lg"></i>
+                                        </button>
+                                        <button onclick="updateStatus(@item.Id, '-1')" class="btn-action btn-cancel ms-1" title="Hủy đơn">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    }
+                                </td>
+                            </tr>
+                        }
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="modal fade" id="orderDetailModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content border-0 shadow-lg rounded-4">
+            <div class="modal-header border-bottom-0 pb-0">
+                <h5 class="fw-bold text-poly-brown">Chi tiết hóa đơn</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body p-4" id="detailContent"></div>
+        </div>
+    </div>
+</div>
+
+<script>
+    function updateStatus(id, stt) {
+        let msg = stt == '1' ? "Bạn muốn DUYỆT đơn hàng này?" : "Bạn chắc chắn muốn HỦY đơn hàng này?";
+        if(confirm(msg)) {
+            $.post('/Order/UpdateStatus', { id: id, status: stt == '1' ? 'completed' : 'cancel' }, function(res) {
+                if(res.success) {
+                    location.reload();
+                } else {
+                    alert("Lỗi hệ thống, Nam thử lại nhé!");
+                }
+            });
+        }
+    }
+
+    function viewDetails(id) {
+        $('#detailContent').html('<div class="text-center py-4"><div class="spinner-border text-warning"></div></div>');
+        $('#orderDetailModal').modal('show');
+        $.get('/Order/GetDetails/' + id, function(data) {
+            $('#detailContent').html(data);
+        });
+    }
+
+    function filterOrders() {
+        let input = document.getElementById("orderSearch").value.toUpperCase();
+        let rows = document.querySelector("#orderTable tbody").rows;
+        for (let row of rows) {
+            row.style.display = row.cells[0].textContent.toUpperCase().includes(input) ? "" : "none";
+        }
+    }
+</script>

@@ -1,0 +1,100 @@
+﻿@model Poly_Cafe.DTO.UserDTO
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    ViewData["Title"] = "Chỉnh sửa nhân viên";
+}
+
+<style>
+    /* Biến màu sắc đặc trưng của Poly Coffee */
+    :root {
+        --poly-brown: #5D4037;
+        --poly-brown-hover: #4E342E;
+    }
+
+    .text-poly {
+        color: var(--poly-brown) !important;
+    }
+    
+    /* Nút bấm tông màu Nâu Cà Phê */
+    .btn-poly {
+        background-color: var(--poly-brown) !important;
+        color: white !important;
+        border: none;
+        transition: all 0.3s ease;
+    }
+
+        .btn-poly:hover {
+            background-color: var(--poly-brown-hover) !important;
+            box-shadow: 0 4px 12px rgba(93, 64, 55, 0.2);
+        }
+
+    /* Bo góc 10px cho đồng bộ với Sidebar */
+    .rounded-poly {
+        border-radius: 10px !important;
+    }
+
+    .form-control:focus, .form-select:focus {
+        border-color: var(--poly-brown);
+        box-shadow: 0 0 0 0.25rem rgba(93, 64, 55, 0.1);
+    }
+</style>
+
+<div class="container-fluid py-4">
+    <div class="card shadow-sm border-0 mx-auto" style="max-width: 550px; border-radius: 15px !important;">
+        <div class="card-body p-5">
+            <div class="text-center mb-4">
+                <i class="fas fa-user-edit fa-2x text-poly mb-2"></i>
+                <h3 class="fw-bold text-poly">CHỈNH SỬA THÔNG TIN</h3>
+                <p class="text-muted small">Cập nhật dữ liệu cho tài khoản nhân viên</p>
+            </div>
+            
+            @if (ViewBag.Error != null)
+            {
+                <div class="alert alert-danger border-0 rounded-3 small shadow-sm mb-4">
+                    <i class="fas fa-exclamation-circle me-2"></i> @ViewBag.Error
+                </div>
+            }
+
+            <form asp-action="Edit" method="post">
+                <input type="hidden" asp-for="Id" />
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-secondary">Họ tên</label>
+                    <input asp-for="FullName" class="form-control rounded-poly px-3 py-2" required />
+                </div>
+                
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-secondary">Email</label>
+                    <input asp-for="Email" type="email" class="form-control rounded-poly px-3 py-2" required />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-secondary">Mật khẩu mới (Để trống nếu không đổi)</label>
+                    <input asp-for="Password" type="password" class="form-control rounded-poly px-3 py-2" placeholder="********" />
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label small fw-bold text-secondary">Số điện thoại</label>
+                    <input asp-for="Phone" class="form-control rounded-poly px-3 py-2" maxlength="20" />
+                </div>
+
+                <div class="mb-4">
+                    <label class="form-label small fw-bold text-secondary">Vai trò hệ thống</label>
+                    <select asp-for="Role" class="form-select rounded-poly px-3 py-2">
+                        <option value="true">Quản trị viên (Admin)</option>
+                        <option value="false">Nhân viên phục vụ</option>
+                    </select>
+                </div>
+
+                <div class="d-flex gap-3">
+                    <button type="submit" class="btn btn-poly w-100 rounded-poly fw-bold py-2 shadow-sm">
+                        <i class="fas fa-check-circle me-2"></i> CẬP NHẬT
+                    </button>
+                    <a asp-action="Index" class="btn btn-light w-100 rounded-poly fw-bold py-2 border">
+                        HỦY BỎ
+                    </a>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>

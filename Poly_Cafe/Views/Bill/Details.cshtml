@@ -1,0 +1,75 @@
+﻿@model Poly_Cafe.DTO.BillDTO
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4">
+    <div class="card shadow-sm border-0" style="max-width: 500px; margin: auto; background: #fff;">
+        <div class="card-body">
+            <div class="text-center border-bottom pb-3">
+                <h3 class="fw-bold text-primary">POLY COFFEE</h3>
+                <p class="mb-0 fw-bold">Mã đơn: #@(Model.Code ?? "N/A")</p>
+                @* Sửa lỗi ToString cho DateTime? bằng cách thêm .Value *@
+                <small class="text-muted">
+                    @(Model.CreatedAt != null ? Model.CreatedAt.Value.ToString("dd/MM/yyyy HH:mm") : "N/A")
+                </small>
+            </div>
+
+            <div class="py-3">
+                @if (Model.BillDetails != null && Model.BillDetails.Any())
+                {
+                    foreach (var item in Model.BillDetails)
+                    {
+                        <div class="d-flex justify-content-between align-items-center mb-2">
+                            <div class="d-flex align-items-center gap-2">
+                                <img src="/image/@item.DrinkImage" 
+                                     style="width:40px; height:40px; border-radius:5px; object-fit:cover;" 
+                                     onerror="this.src='/image/default-drink.png'" />
+                                <span>@item.DrinkName <small class="text-muted">x @item.Quantity</small></span>
+                            </div>
+                            @* Ép kiểu decimal để dùng "N0" không bị lỗi *@
+                            <span class="fw-bold">@(((decimal)(item.Price * item.Quantity)).ToString("N0"))đ</span>
+                        </div>
+                    }
+                }
+                else
+                {
+                    <p class="text-center text-muted">Không có chi tiết món ăn.</p>
+                }
+            </div>
+
+            <div class="border-top pt-3">
+                <div class="d-flex justify-content-between mb-1">
+                    <span>Tạm tính:</span>
+                    <span>@(((decimal)Model.Total).ToString("N0"))đ</span>
+                </div>
+                <div class="d-flex justify-content-between mb-1 text-secondary">
+                    <span>Giảm giá:</span>
+                    <span>-@(((decimal)Model.Discount).ToString("N0"))đ</span>
+                </div>
+                <div class="d-flex justify-content-between">
+                    <span class="h5 fw-bold text-dark">THÀNH TIỀN:</span>
+                    <span class="h5 fw-bold text-success">@(((decimal)Model.FinalTotal).ToString("N0"))đ</span>
+                </div>
+            </div>
+
+            @* Phần này để ẩn các nút khi nhấn In *@
+            <style>
+                @@media print {
+                    .no-print { display: none !important; }
+                    .card { box-shadow: none !important; border: none !important; }
+                }
+            </style>
+
+            <div class="mt-4 no-print text-center d-grid gap-2">
+                <button onclick="window.print()" class="btn btn-dark w-100 py-2">
+                    <i class="bi bi-printer me-1"></i> IN HÓA ĐƠN
+                </button>
+
+                <a asp-action="Index" asp-controller="Order" class="btn btn-outline-secondary w-100 py-2">
+                    <i class="bi bi-arrow-left me-1"></i> QUAY LẠI
+                </a>
+            </div>
+        </div>
+    </div>
+</div>

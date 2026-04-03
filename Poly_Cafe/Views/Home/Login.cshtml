@@ -1,0 +1,49 @@
+﻿@{
+    Layout = null;
+}
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="utf-8" />
+    <title>Login - POLY COFFE</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root { --primary-brown: #5d4037; --bg-cream: #fdfaf5; }
+        body { background-color: var(--bg-cream); font-family: sans-serif; display: flex; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .login-card { width: 400px; background: #fff; border-radius: 20px; overflow: hidden; box-shadow: 0 15px 35px rgba(0,0,0,0.1); }
+        .header-box { background: var(--primary-brown); color: white; padding: 40px; text-align: center; }
+        .form-content { padding: 40px; }
+        .input-group { margin-bottom: 20px; position: relative; }
+        .input-group i { position: absolute; left: 15px; top: 12px; color: #aaa; }
+        .input-group input { width: 100%; padding: 12px 15px 12px 45px; border: 1px solid #ddd; border-radius: 10px; box-sizing: border-box; }
+        .btn-login { width: 100%; background: var(--primary-brown); color: white; border: none; padding: 14px; border-radius: 10px; cursor: pointer; font-weight: bold; }
+        .error-message { color: #e74c3c; text-align: center; margin-bottom: 15px; }
+    </style>
+</head>
+<body>
+    <div class="login-card">
+        <div class="header-box">
+            <i class="fas fa-coffee" style="font-size: 40px;"></i>
+            <h2>POLY COFFE</h2>
+        </div>
+        <div class="form-content">
+            @if (TempData["Error"] != null)
+            {
+                <div class="error-message">@TempData["Error"]</div>
+            }
+            <form action="/Home/Login" method="post">
+                <div class="input-group">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" name="email" placeholder="Email" required />
+                </div>
+                <div class="input-group">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" name="password" placeholder="Mật khẩu" required />
+                </div>
+                <button type="submit" class="btn-login">ĐĂNG NHẬP</button>
+            </form>
+        </div>
+    </div>
+</body>
+</html>

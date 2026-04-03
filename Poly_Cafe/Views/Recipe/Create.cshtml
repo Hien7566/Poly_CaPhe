@@ -1,0 +1,83 @@
+﻿@model Poly_Cafe.DTO.RecipeDTO
+@{
+    ViewData["Title"] = "Thêm Công Thức";
+    Layout = "_Layout";
+}
+
+<style>
+    .content-wrapper { font-family: 'Segoe UI', sans-serif; color: #333; }
+    .breadcrumb-text { font-size: 0.85rem; color: #b2bec3; margin-bottom: 15px; font-weight: 500; }
+    .breadcrumb-text a { color: #8d6e63; text-decoration: none; }
+    .data-card { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); padding: 30px; }
+    .form-label { font-weight: 600; color: #2d3436; font-size: 0.95rem; }
+    .form-control, .form-select { border-radius: 10px; padding: 12px 15px; border: 1px solid #eee; background-color: #fdfaf5; }
+    .form-control:focus, .form-select:focus { border-color: #8d6e63; box-shadow: 0 0 0 0.2rem rgba(141, 110, 99, 0.25); background-color: #fff; }
+    .btn-save { background-color: #4e342e; color: white; border-radius: 10px; padding: 10px 30px; font-weight: 600; border: none; transition: 0.3s; }
+    .btn-save:hover { background-color: #3e2723; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .btn-cancel { background-color: #f1f2f6; color: #2d3436; border-radius: 10px; padding: 10px 30px; font-weight: 600; border: none; text-decoration: none; margin-right: 10px; transition: 0.3s; }
+    .btn-cancel:hover { background-color: #dfe4ea; color: #2d3436; }
+</style>
+
+<div class="content-wrapper">
+    <div class="breadcrumb-text">
+        <i class="fas fa-home"></i> <a href="/Dashboard">Bảng điều khiển</a> &nbsp; / &nbsp; <a href="/Recipe">Công thức</a> &nbsp; / &nbsp; Thêm định lượng
+    </div>
+
+    <h4 class="mb-4" style="font-weight: 700; color: #2d3436;">Cài Đặt Định Lượng Nguyên Liệu</h4>
+
+    <div class="data-card">
+        <form action="/Recipe/Create" method="post">
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Chọn Đồ Uống <span class="text-danger">*</span></label>
+                    <select name="Drink_Id" class="form-select" required>
+                        <option value="">-- Click để chọn món --</option>
+                        @if (ViewBag.Drinks != null)
+                        {
+                            foreach (var item in ViewBag.Drinks as SelectList)
+                            {
+                                <option value="@item.Value">☕ @item.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Chọn Nguyên Liệu <span class="text-danger">*</span></label>
+                    <select name="Ingredient_Id" class="form-select" required>
+                        <option value="">-- Click để chọn nguyên liệu --</option>
+                        @if (ViewBag.Ingredients != null)
+                        {
+                            foreach (var item in ViewBag.Ingredients as SelectList)
+                            {
+                                <option value="@item.Value">📦 @item.Text</option>
+                            }
+                        }
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Định lượng <span class="text-danger">*</span></label>
+                    <input type="number" step="0.01" class="form-control" name="Quantity" required placeholder="VD: 20, 1.5, 100...">
+                </div>
+                <div class="col-md-6 mb-3">
+                    <label class="form-label">Đơn vị (ml, Gram, Muỗng...) <span class="text-danger">*</span></label>
+                    <input type="text" class="form-control" name="Unit" required placeholder="VD: ml, Gram, Cái...">
+                </div>
+            </div>
+
+            <div class="mb-4">
+                <label class="form-label">Hướng dẫn thao tác / Ghi chú</label>
+                <textarea class="form-control" name="Instructions" rows="3" placeholder="VD: Đánh bọt sữa mịn trước khi đổ vào ly..."></textarea>
+            </div>
+
+            <hr style="border-color: #eee; margin-bottom: 25px;" />
+
+            <div class="text-end">
+                <a href="/Recipe" class="btn-cancel">Hủy bỏ</a>
+                <button type="submit" class="btn-save"><i class="fas fa-save me-2"></i> Lưu định lượng</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,21 @@
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
+
+  <PropertyGroup>
+    <TargetFramework>net10.0</TargetFramework>
+    <Nullable>disable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+  </PropertyGroup>
+
+  
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.AspNetCore.Session" Version="2.3.9" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="7.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Poly_Cafe.BLL\Poly_Cafe.BLL.csproj" />
+    <ProjectReference Include="..\Poly_Cafe.DTO\Poly_Cafe.DTO.csproj" />
+  </ItemGroup>
+
+</Project>

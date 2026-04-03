@@ -1,0 +1,68 @@
+﻿@model IEnumerable<Poly_Cafe.DTO.OrderDetailDTO>
+
+<div class="p-3" style="font-family: 'Courier New', Courier, monospace; color: #333;">
+    <div class="text-center mb-3">
+        <h4 class="fw-bold mb-1">POLY COFFEE</h4>
+        <p class="small mb-0">Đường số 1, TP. Biên Hòa</p>
+        <p class="small mb-0">Hotline: 0909.123.456</p>
+        
+        <div class="border-bottom my-2" style="border-style: dashed !important; border-width: 2px;"></div>
+        
+        <div class="d-flex justify-content-between px-2" style="font-size: 0.85rem;">
+            <span>Mã: #@ViewBag.OrderCode</span>
+            <span>@ViewBag.OrderDate</span>
+        </div>
+        
+        <div class="border-bottom my-2" style="border-style: dashed !important; border-width: 2px;"></div>
+    </div>
+
+    <div class="bill-items">
+        @foreach (var item in Model)
+        {
+            <div class="mb-3">
+                <div class="d-flex justify-content-between">
+                    <span class="fw-bold" style="font-size: 1.1rem;">
+                        @item.Quantity x @item.DrinkName
+                    </span>
+                    <span class="fw-bold">@((item.Price * item.Quantity).ToString("N0"))</span>
+                </div>
+                @if (!string.IsNullOrEmpty(item.Note))
+                {
+                    <div class="small text-muted ps-3" style="font-style: italic;">
+                        - @item.Note
+                    </div>
+                }
+            </div>
+        }
+    </div>
+
+    <div class="border-bottom my-2" style="border-style: dashed !important; border-width: 2px;"></div>
+
+    <div class="d-flex justify-content-between align-items-center mt-3">
+        <h5 class="fw-bold mb-0">TỔNG CỘNG:</h5>
+        <h5 class="fw-bold mb-0" style="color: #d9534f;">@ViewBag.FinalTotal?.ToString("N0")đ</h5>
+    </div>
+
+    <div class="text-center mt-4" style="font-style: italic; font-size: 0.9rem;">
+        Cảm ơn quý khách. Hẹn gặp lại!
+    </div>
+
+    <div class="d-flex gap-2 mt-4 no-print">
+        <button class="btn btn-outline-secondary w-100 rounded-3 fw-bold" data-bs-dismiss="modal">ĐÓNG</button>
+        <button class="btn btn-dark w-100 rounded-3 fw-bold" onclick="window.print()">
+            <i class="bi bi-printer-fill me-1"></i> IN BILL
+        </button>
+    </div>
+</div>
+
+<style>
+    /* CSS để khi bấm In nó chỉ ra đúng cái tờ Bill này thôi */
+    @@media print {
+        .no-print, .modal-header, .btn-close { display: none !important; }
+        .modal-content { border: none !important; background: white !important; }
+        body * { visibility: hidden; }
+        .modal.show .modal-dialog { margin: 0; padding: 0; width: 100%; max-width: 100%; }
+        .modal-body, .modal-body * { visibility: visible; }
+        .modal-body { position: absolute; left: 0; top: 0; width: 100%; padding: 0 !important; }
+    }
+</style>

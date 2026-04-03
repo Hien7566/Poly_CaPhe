@@ -1,0 +1,179 @@
+﻿@model IEnumerable<Poly_Cafe.DTO.IngredientDTO>
+@{
+    ViewData["Title"] = "Kho nguyên liệu";
+    Layout = "_Layout";
+    int stt = 1;
+}
+
+@functions {
+    public string VietnameseToAscii(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "";
+        string asciiName = name.ToLower().Trim();
+        asciiName = asciiName.Replace("à", "a").Replace("á", "a").Replace("ả", "a").Replace("ã", "a").Replace("ạ", "a");
+        asciiName = asciiName.Replace("ê", "e").Replace("ề", "e").Replace("ế", "e").Replace("ể", "e").Replace("ễ", "e").Replace("ệ", "e");
+        asciiName = asciiName.Replace("ì", "i").Replace("í", "i").Replace("ỉ", "i").Replace("ĩ", "i").Replace("ị", "i");
+        asciiName = asciiName.Replace("ò", "o").Replace("ó", "o").Replace("ỏ", "o").Replace("õ", "o").Replace("ọ", "o");
+        asciiName = asciiName.Replace("ô", "o").Replace("ồ", "o").Replace("ố", "o").Replace("ổ", "o").Replace("ỗ", "o").Replace("ộ", "o");
+        asciiName = asciiName.Replace("ơ", "o").Replace("ờ", "o").Replace("ớ", "o").Replace("ở", "o").Replace("ỡ", "o").Replace("ợ", "o");
+        asciiName = asciiName.Replace("ù", "u").Replace("ú", "u").Replace("ủ", "u").Replace("ũ", "u").Replace("ụ", "u");
+        asciiName = asciiName.Replace("ư", "u").Replace("ừ", "u").Replace("ứ", "u").Replace("ử", "u").Replace("ữ", "u").Replace("ự", "u");
+        asciiName = asciiName.Replace("ỳ", "y").Replace("ý", "y").Replace("ỷ", "y").Replace("ỹ", "y").Replace("ỵ", "y");
+        asciiName = asciiName.Replace("đ", "d");
+        return asciiName;
+    }
+
+    public string GetIngredientIcon(string name)
+    {
+        if (string.IsNullOrEmpty(name)) return "📦";
+        var norm = VietnameseToAscii(name);
+        if (norm.Contains("sua") || norm.Contains("kem") || norm.Contains("whipping")) return "🥛";
+        if (norm.Contains("duong") || norm.Contains("muoi") || norm.Contains("bot")) return "🧂";
+        if (norm.Contains("ca phe") || norm.Contains("coffee")) return "☕";
+        if (norm.Contains("siro") || norm.Contains("syrup") || norm.Contains("mat ong") || norm.Contains("mut")) return "🍯";
+        if (norm.Contains("tra")) return "🍃";
+        if (norm.Contains("chanh") || norm.Contains("cam")) return "🍋";
+        if (norm.Contains("dao")) return "🍑";
+        if (norm.Contains("da")) return "🧊";
+        if (norm.Contains("socola") || norm.Contains("cacao")) return "🍫";
+        if (norm.Contains("tran chau") || norm.Contains("thach") || norm.Contains("nhan") || norm.Contains("vai")) return "🧋";
+        if (norm.Contains("banh") || norm.Contains("croissant") || norm.Contains("donut") || norm.Contains("macaron")) return "🍰";
+        if (norm.Contains("coca") || norm.Contains("pepsi") || norm.Contains("sting") || norm.Contains("red bull") || norm.Contains("7up")) return "🥤";
+        if (norm.Contains("bo ") || norm.Contains("dau ") || norm.Contains("xoai") || norm.Contains("mang cau") || norm.Contains("sau rieng") || norm.Contains("mit") || norm.Contains("dua hau")) return "🥑";
+        return "📦";
+    }
+}
+
+<style>
+    .content-wrapper { font-family: 'Segoe UI', sans-serif; color: #333; }
+    .breadcrumb-text { font-size: 0.85rem; color: #b2bec3; margin-bottom: 15px; font-weight: 500; }
+    .breadcrumb-text a { color: #8d6e63; text-decoration: none; }
+    .welcome-section { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .btn-primary-custom { background-color: #4e342e; color: white !important; border-radius: 12px; padding: 10px 20px; font-weight: 600; text-decoration: none; transition: 0.3s; border: none; }
+    .btn-primary-custom:hover { background-color: #3e2723; transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+    .search-bar-container { position: relative; margin-bottom: 25px; }
+    .search-input { width: 100%; padding: 12px 20px 12px 50px; border-radius: 12px; border: 1px solid #eee; background: white; outline: none; transition: 0.3s; }
+    .search-input:focus { border-color: #8d6e63; box-shadow: 0 4px 20px rgba(141, 110, 99, 0.1); }
+    .search-icon { position: absolute; left: 20px; top: 50%; transform: translateY(-50%); color: #b2bec3; }
+    .data-card { background: white; border-radius: 16px; box-shadow: 0 10px 30px rgba(0,0,0,0.04); padding: 20px; }
+    .custom-table { width: 100%; border-collapse: collapse; }
+    .custom-table th { padding: 15px 10px; text-align: left; font-size: 0.8rem; text-transform: uppercase; color: #b2bec3; letter-spacing: 1px; border-bottom: 2px solid #f1f1f1;}
+    .custom-table td { padding: 15px 10px; border-bottom: 1px solid #f9f9f9; vertical-align: middle; }
+    .ingredient-name { display: flex; align-items: center; gap: 12px; font-weight: 600; }
+    .ingredient-icon { width: 40px; height: 40px; background-color: #f5ebe1; border-radius: 10px; display: flex; align-items: center; justify-content: center; font-size: 1.3rem; }
+    .stock-badge { padding: 5px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; }
+    .stock-good { background-color: #e8f5e9; color: #2e7d32; }
+    .stock-warning { background-color: #fff3e0; color: #e65100; }
+    .stock-danger { background-color: #ffebee; color: #c62828; }
+    .action-btn { background: none; border: none; padding: 5px; margin: 0 5px; cursor: pointer; color: #b2bec3; text-decoration: none; }
+    .btn-edit:hover { color: #4e342e; }
+    .btn-delete:hover { color: #d63031; }
+</style>
+
+<div class="content-wrapper">
+    @if (TempData["ErrorMessage"] != null)
+    {
+        <div class="alert alert-danger alert-dismissible fade show" role="alert" style="border-radius: 12px;">
+            <i class="fas fa-exclamation-triangle me-2"></i> @TempData["ErrorMessage"]
+            <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+        </div>
+    }
+
+    <div class="breadcrumb-text">
+        <i class="fas fa-home"></i> <a href="/Dashboard">Bảng điều khiển</a> &nbsp; / &nbsp; Kho nguyên liệu
+    </div>
+
+    <div class="welcome-section">
+        <h4><i class="fas fa-boxes" style="color: #8d6e63; margin-right: 10px;"></i> Quản lý Kho Nguyên Liệu</h4>
+        <a href="/Ingredient/Create" class="btn-primary-custom"><i class="fas fa-plus me-2"></i> Nhập nguyên liệu</a>
+    </div>
+
+    <div class="data-card">
+        <div class="search-bar-container">
+            <i class="fas fa-search search-icon"></i>
+            <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm tên nguyên liệu, nhà cung cấp.......">
+        </div>
+
+        <table class="custom-table" id="ingredientTable">
+            <thead>
+                <tr>
+                    <th width="5%">STT</th>
+                    <th width="30%">Nguyên liệu</th>
+                    <th width="15%" class="text-center">Kho / Đơn vị</th>
+                    <th width="15%" class="text-center">Tình trạng</th>
+                    <th width="15%" class="text-center">Giá nhập</th>
+                    <th width="15%">Nhà cung cấp</th>
+                    <th width="5%" class="text-center">Xử lý</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td style="font-weight: 600; color: #b2bec3;">@stt</td>
+                            <td>
+                                <div class="ingredient-name">
+                                    <div class="ingredient-icon">@GetIngredientIcon(item.Name)</div>
+                                    @item.Name
+                                </div>
+                            </td>
+                            <td class="text-center">
+                                <span style="font-weight: 700; color: #2d3436; font-size: 1.1rem;">@item.Stock_Quantity</span>
+                                <span style="color: #636e72; font-size: 0.9rem;">@item.Unit</span>
+                            </td>
+                            <td class="text-center">
+                                @if (item.Stock_Quantity <= 0)
+                                {
+                                    <span class="stock-badge stock-danger">Hết hàng</span>
+                                }
+                                else if (item.Stock_Quantity <= item.Min_Stock)
+                                {
+
+                                    <span class="stock-badge stock-warning">Sắp hết</span>
+                                }
+                                else
+                                {
+
+                                    <span class="stock-badge stock-good">Còn hàng</span>
+                                }
+                            </td>
+                            <td class="text-center" style="font-weight: 600; color: #e53935;">
+                                @item.Price_Per_Unit.ToString("N0") đ
+                            </td>
+                            <td style="color: #636e72; font-size: 0.9rem;">
+                                @(string.IsNullOrEmpty(item.Supplier) ? "---" : item.Supplier)
+                            </td>
+                            <td class="text-center">
+                                <a href="/Ingredient/Edit/@item.Id" class="action-btn btn-edit"><i class="far fa-edit"></i></a>
+                                <form action="/Ingredient/Delete/@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa nguyên liệu này?');">
+                                    <button type="submit" class="action-btn btn-delete"><i class="far fa-trash-alt"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                        stt++;
+                    }
+                }
+                else
+                {
+                    <tr><td colspan="7" class="text-center py-4 text-muted">Kho đang trống.</td></tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('searchInput').addEventListener('input', function () {
+            var keyword = this.value.toLowerCase().trim();
+            var rows = document.querySelectorAll('#ingredientTable tbody tr');
+            rows.forEach(function (row) {
+                if (row.cells[0].hasAttribute('colspan')) return;
+                var text = row.cells[1].textContent.toLowerCase() + " " + row.cells[5].textContent.toLowerCase();
+                row.style.display = text.includes(keyword) ? '' : 'none';
+            });
+        });
+    </script>
+}

@@ -1,0 +1,301 @@
+﻿@model IEnumerable<Poly_Cafe.DTO.DrinkDTO>
+@{
+    ViewData["Title"] = "Thực đơn đồ uống";
+    Layout = "_Layout"; // Vẫn dùng layout cũ để giữ thanh sidebar nâu
+}
+
+<style>
+    /* Tổng thể nội dung */
+    .content-wrapper {
+        font-family: 'Segoe UI', sans-serif;
+        color: #333;
+    }
+
+    /* Header: Chào hỏi & Nút thêm */
+    .welcome-section {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+
+    .welcome-text h4 {
+        font-weight: 700;
+        margin: 0;
+        color: #2d3436;
+    }
+
+    .welcome-text p {
+        color: #636e72;
+        margin: 0;
+        font-size: 0.9rem;
+    }
+
+    .btn-add-product {
+        background-color: #4e342e;
+        color: white !important;
+        border-radius: 12px;
+        padding: 10px 20px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: 0.3s;
+        border: none;
+    }
+
+        .btn-add-product:hover {
+            background-color: #3e2723;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+
+    /* Ô tìm kiếm */
+    .search-bar-container {
+        position: relative;
+        margin-bottom: 30px;
+    }
+
+    .search-input {
+        width: 100%;
+        padding: 15px 20px 15px 50px;
+        border-radius: 15px;
+        border: 1px solid #eee;
+        background: white;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.03);
+        outline: none;
+        transition: 0.3s;
+    }
+
+        .search-input:focus {
+            border-color: #8d6e63;
+            box-shadow: 0 4px 20px rgba(141, 110, 99, 0.1);
+        }
+
+    .search-icon {
+        position: absolute;
+        left: 20px;
+        top: 50%;
+        transform: translateY(-50%);
+        color: #b2bec3;
+        font-size: 1.1rem;
+    }
+
+    /* Bảng dữ liệu */
+    .data-card {
+        background: white;
+        border-radius: 20px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.05);
+        overflow: hidden;
+    }
+
+    .custom-table {
+        width: 100%;
+        border-collapse: collapse;
+        margin: 0;
+    }
+
+        .custom-table thead {
+            background-color: #fdfaf5;
+        }
+
+        .custom-table th {
+            padding: 20px;
+            text-align: left;
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            color: #b2bec3;
+            letter-spacing: 1px;
+            border: none;
+        }
+
+        .custom-table td {
+            padding: 15px 20px;
+            border-bottom: 1px solid #f1f1f1;
+            vertical-align: middle;
+            font-size: 0.95rem;
+        }
+
+    /* Ảnh sản phẩm */
+    .product-img-box {
+        width: 80px;
+        height: 80px;
+        border-radius: 16px;
+        background: #fdfaf5;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        overflow: hidden;
+    }
+
+        .product-img-box img {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .product-img-box i {
+            color: #8d6e63;
+            font-size: 1.5rem;
+        }
+
+    /* Badge danh mục */
+    .badge-category {
+        background: #efebe9;
+        color: #8d6e63;
+        padding: 6px 15px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        font-weight: 600;
+    }
+
+    /* Nút thao tác */
+    .action-btn {
+        background: none;
+        border: none;
+        padding: 5px;
+        margin: 0 5px;
+        cursor: pointer;
+        transition: 0.2s;
+        color: #b2bec3;
+    }
+
+    .btn-edit:hover {
+        color: #4e342e;
+    }
+
+    .btn-delete:hover {
+        color: #d63031;
+    }
+
+    /* CSS cho cột Mô tả để chống vỡ khung */
+    .desc-cell {
+        max-width: 250px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        color: #636e72;
+        font-size: 0.9rem;
+    }
+</style>
+
+<div class="content-wrapper">
+    <div class="welcome-section">
+        <div class="welcome-text">
+            <h4>Chào mừng trở lại!</h4>
+            <p>@DateTime.Now.ToString("'Ngày' dd 'tháng' MM 'năm' yyyy")</p>
+        </div>
+        <a href="/Drink/Create" class="btn-add-product">
+            <i class="fas fa-plus me-2"></i> Thêm sản phẩm
+        </a>
+    </div>
+
+    <h5 class="mb-1" style="font-weight: 600;">Quản lý đồ uống</h5>
+    <p class="text-muted mb-4 small">Quản lý danh sách sản phẩm của cửa hàng</p>
+
+    <div class="search-bar-container">
+        <i class="fas fa-search search-icon"></i>
+        <input type="text" id="searchInput" class="search-input" placeholder="Tìm kiếm sản phẩm theo tên hoặc danh mục...">
+    </div>
+
+    <div class="data-card">
+        <table class="custom-table" id="drinkTable">
+            <thead>
+                <tr>
+                    <th>Hình ảnh</th>
+                    <th>Tên sản phẩm</th>
+                    <th>Danh mục</th>
+                    <th>Giá bán</th>
+                    <th>Mô tả</th>
+                    <th class="text-center">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @if (Model != null && Model.Any())
+                {
+                    foreach (var item in Model)
+                    {
+                        <tr>
+                            <td>
+                                <div class="product-img-box">
+                                    @{
+                                        string finalImgPath = "";
+
+                                        if (!string.IsNullOrEmpty(item.Image))
+                                        {
+                                            if (item.Image.StartsWith("/")) { finalImgPath = item.Image; }
+                                            else { finalImgPath = "/image/" + item.Image; }
+                                        }
+                                        else
+                                        {
+                                            string imgName = item.Name.ToLower()
+                                            .Replace(" ", "_")
+                                            .Replace("à", "a").Replace("á", "a").Replace("ả", "a").Replace("ã", "a").Replace("ạ", "a")
+                                            .Replace("ê", "e").Replace("ề", "e").Replace("ế", "e").Replace("ể", "e").Replace("ễ", "e").Replace("ệ", "e")
+                                            .Replace("ì", "i").Replace("í", "i").Replace("ỉ", "i").Replace("ĩ", "i").Replace("ị", "i")
+                                            .Replace("ò", "o").Replace("ó", "o").Replace("ỏ", "o").Replace("õ", "o").Replace("ọ", "o")
+                                            .Replace("ô", "o").Replace("ồ", "o").Replace("ố", "o").Replace("ổ", "o").Replace("ỗ", "o").Replace("ộ", "o")
+                                            .Replace("ơ", "o").Replace("ờ", "o").Replace("ớ", "o").Replace("ở", "o").Replace("ỡ", "o").Replace("ợ", "o")
+                                            .Replace("ù", "u").Replace("ú", "u").Replace("ủ", "u").Replace("ũ", "u").Replace("ụ", "u")
+                                            .Replace("ư", "u").Replace("ừ", "u").Replace("ứ", "u").Replace("ử", "u").Replace("ữ", "u").Replace("ự", "u")
+                                            .Replace("ỳ", "y").Replace("ý", "y").Replace("ỷ", "y").Replace("ỹ", "y").Replace("ỵ", "y")
+                                            .Replace("đ", "d");
+                                            finalImgPath = "/image/" + imgName + ".jpg";
+                                        }
+                                    }
+                                    <img src="@finalImgPath" onerror="this.style.display='none'; this.nextElementSibling.style.display='block';" />
+                                    <i class="fas fa-mug-hot" style="display:none;"></i>
+                                </div>
+                            </td>
+
+                            <td><span style="font-weight: 600; color: #2d3436;">@item.Name</span></td>
+                            <td><span class="badge-category">@(string.IsNullOrEmpty(item.CategoryName) ? "Chưa phân loại" : item.CategoryName)</span></td>
+
+                            <td><span style="font-weight: 700; color: #2d3436;">@item.Price.ToString("N0") VNĐ</span></td>
+
+                            <td class="desc-cell" title="@item.Description">
+                                @(string.IsNullOrEmpty(item.Description) ? "---" : item.Description)
+                            </td>
+
+                            <td class="text-center">
+                                <a href="/Drink/Edit/@item.Id" class="action-btn btn-edit"><i class="far fa-edit"></i></a>
+                                <form action="/Drink/Delete/@item.Id" method="post" style="display:inline;" onsubmit="return confirm('Bạn có chắc chắn muốn xóa món đồ uống này không?');">
+                                    <button type="submit" class="action-btn btn-delete"><i class="far fa-trash-alt"></i></button>
+                                </form>
+                            </td>
+                        </tr>
+                    }
+                }
+                else
+                {
+                    <tr>
+                        <td colspan="6" class="text-center py-5 text-muted">Chưa có dữ liệu đồ uống. Vui lòng thêm sản phẩm mới.</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        document.getElementById('searchInput').addEventListener('input', function () {
+            var keyword = this.value.toLowerCase().trim();
+            var rows = document.querySelectorAll('#drinkTable tbody tr');
+
+            rows.forEach(function (row) {
+                // Bỏ qua dòng thông báo không có dữ liệu
+                if (row.cells[0].hasAttribute('colspan')) return;
+
+                // Lấy tên món và tên danh mục để lọc
+                var drinkName = row.cells[1].textContent.toLowerCase();
+                var categoryName = row.cells[2].textContent.toLowerCase();
+
+                // Ẩn/hiện theo từ khóa
+                if (drinkName.includes(keyword) || categoryName.includes(keyword)) {
+                    row.style.display = '';
+                } else {
+                    row.style.display = 'none';
+                }
+            });
+        });
+    </script>
+}

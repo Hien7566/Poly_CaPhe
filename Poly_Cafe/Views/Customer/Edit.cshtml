@@ -1,0 +1,91 @@
+﻿@model Poly_Cafe.DTO.CustomerDTO
+@{
+    ViewData["Title"] = "Cập nhật Khách Hàng";
+    Layout = "_Layout";
+}
+
+<style>
+    /* CSS y hệt trang Create */
+    .content-wrapper { font-family: 'Segoe UI', sans-serif; background-color: #f5ece4; padding: 40px 20px; display: flex; justify-content: center; min-height: 100vh;}
+    .form-card { background: white; border-radius: 16px; padding: 30px 40px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); width: 100%; max-width: 600px; border: 1px solid #f0e6d2; }
+    .form-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; }
+    .form-header h4 { margin: 0; font-weight: 700; color: #4a3b32; font-size: 1.3rem; }
+    .close-btn { color: #b2bec3; text-decoration: none; font-size: 1.2rem; transition: 0.3s; }
+    .close-btn:hover { color: #d63031; }
+    .form-group { margin-bottom: 20px; }
+    .form-label { font-size: 0.9rem; color: #7a6f6f; font-weight: 600; margin-bottom: 8px; display: block; }
+    .form-control, .form-select { border-radius: 8px; padding: 12px 15px; border: 1px solid #e2d9d1; font-size: 0.95rem; color: #4a3b32; width: 100%; box-sizing: border-box; background-color: #fcf9f2;}
+    .form-control:focus, .form-select:focus { border-color: #8d6e63; box-shadow: 0 0 0 2px rgba(141, 110, 99, 0.2); outline: none; background-color: #fff;}
+    .form-actions { display: flex; justify-content: flex-end; gap: 15px; margin-top: 30px; }
+    .btn-cancel { background: white; color: #7a6f6f; border: 1px solid #e2d9d1; border-radius: 8px; padding: 10px 25px; font-weight: 600; text-decoration: none; transition: 0.3s; }
+    .btn-cancel:hover { background: #f1f2f6; }
+    .btn-submit { background-color: #4a3b32; color: white; border: none; border-radius: 8px; padding: 10px 25px; font-weight: 600; cursor: pointer; transition: 0.3s; }
+    .btn-submit:hover { background-color: #312620; }
+</style>
+
+<div class="content-wrapper">
+    <div class="form-card">
+        <div class="form-header">
+            <h4>Cập Nhật Khách Hàng</h4>
+            <a href="/Customer" class="close-btn"><i class="fas fa-times"></i></a>
+        </div>
+
+        <form action="/Customer/Edit" method="post">
+            <input type="hidden" name="Id" value="@Model.Id" />
+
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label class="form-label">Họ và tên *</label>
+                    <input type="text" class="form-control" name="Full_Name" required value="@Model.Full_Name">
+                </div>
+                <div class="col-md-6 form-group">
+                    <label class="form-label">Số điện thoại *</label>
+                    <input type="text" class="form-control" name="Phone" required value="@Model.Phone">
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label class="form-label">Ngày sinh</label>
+                    <input type="date" class="form-control" name="Birthday" value="@(Model.Birthday.HasValue ? Model.Birthday.Value.ToString("yyyy-MM-dd") : "")">
+                </div>
+                <div class="col-md-6 form-group">
+                    <label class="form-label">Giới tính</label>
+                   <select name="Gender" class="form-select">
+                        <option value="" selected="@(string.IsNullOrEmpty(Model.Gender))">-- Chọn --</option>
+                        <option value="Nam" selected="@(Model.Gender == "Nam")">Nam</option>
+                        <option value="Nữ" selected="@(Model.Gender == "Nữ")">Nữ</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6 form-group">
+                    <label class="form-label">Email</label>
+                    <input type="email" class="form-control" name="Email" value="@Model.Email">
+                </div>
+                <div class="col-md-6 form-group">
+                    <label class="form-label" style="color: #d63031;">Tổng chi tiêu (VNĐ)</label>
+                    <input type="number" class="form-control" name="Total_Spent" required value="@Math.Round(Model.Total_Spent)">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="form-label">Địa chỉ</label>
+                <input type="text" class="form-control" name="Address" value="@Model.Address">
+            </div>
+
+            <div class="form-group mt-3">
+                <label style="display: flex; align-items: center; gap: 10px; cursor: pointer; color: #4a3b32; font-weight: 600;">
+                    <input type="checkbox" name="Active" value="true" @(Model.Active ? "checked" : "") style="width: 18px; height: 18px; accent-color: #4a3b32;">
+                    Tài khoản đang hoạt động
+                </label>
+            </div>
+
+            <div class="form-actions">
+                <a href="/Customer" class="btn-cancel">Hủy</a>
+                <button type="submit" class="btn-submit">Lưu thay đổi</button>
+            </div>
+        </form>
+    </div>
+</div>

@@ -1,0 +1,257 @@
+﻿@using Microsoft.AspNetCore.Http
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] - Poly Coffee</title>
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+
+    <style>
+        :root {
+            --sidebar-bg: #4e342e; /* Nâu Poly Coffee */
+            --sidebar-active: #6d4c41;
+            --main-bg: #fdfaf5; /* Kem nhạt Latte Logic */
+            --text-main: #2d3436;
+        }
+
+        body {
+            margin: 0;
+            display: flex;
+            font-family: 'Inter', 'Segoe UI', sans-serif;
+            background-color: var(--main-bg);
+            color: var(--text-main);
+        }
+
+        /* SIDEBAR */
+        .sidebar {
+            width: 280px;
+            background-color: var(--sidebar-bg);
+            height: 100vh;
+            color: #efebe9;
+            position: fixed;
+            display: flex;
+            flex-direction: column;
+            z-index: 1000;
+        }
+
+        .sidebar-brand {
+            padding: 30px 20px 20px 20px;
+            text-align: center;
+        }
+
+            .sidebar-brand i {
+                font-size: 36px;
+                margin-bottom: 10px;
+                display: block;
+            }
+
+            .sidebar-brand h2 {
+                font-size: 20px;
+                font-weight: 700;
+                margin: 0;
+                letter-spacing: 1px;
+            }
+
+            .sidebar-brand p {
+                font-size: 13px;
+                opacity: 0.7;
+                margin: 0;
+            }
+
+        .nav-menu {
+            list-style: none;
+            padding: 10px 0;
+            margin: 0;
+            flex-grow: 1;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+
+            .nav-menu::-webkit-scrollbar {
+                width: 5px;
+            }
+
+            .nav-menu::-webkit-scrollbar-thumb {
+                background: rgba(255, 255, 255, 0.2);
+                border-radius: 10px;
+            }
+
+        .nav-item {
+            margin: 4px 15px;
+        }
+
+        .nav-link {
+            display: flex;
+            align-items: center;
+            padding: 10px 15px;
+            color: #d7ccc8 !important;
+            text-decoration: none !important;
+            gap: 15px;
+            border-radius: 12px;
+            transition: 0.3s;
+            font-size: 15px;
+        }
+
+            .nav-link:hover, .nav-item.active .nav-link {
+                background-color: var(--sidebar-active);
+                color: #fff !important;
+            }
+
+        .menu-divider {
+            padding: 15px 30px 5px;
+            font-size: 11px;
+            text-transform: uppercase;
+            color: rgba(255,255,255,0.3);
+            font-weight: 700;
+        }
+
+        .sidebar-footer {
+            padding: 20px;
+            border-top: 1px solid rgba(255,255,255,0.05);
+        }
+
+        .logout-link {
+            color: #d7ccc8 !important;
+            text-decoration: none !important;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            font-size: 15px;
+        }
+
+        .main-wrapper {
+            margin-left: 280px;
+            width: calc(100% - 280px);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .content-body {
+            padding: 40px;
+            flex-grow: 1;
+        }
+    </style>
+</head>
+<body>
+
+    <aside class="sidebar">
+        <div class="sidebar-brand">
+            <i class="fas fa-coffee"></i>
+            <h2>POLY COFFEE</h2>
+            <p>Chào, @Context.Session.GetString("FullName")</p>
+        </div>
+
+        <ul class="nav-menu">
+            @* --- CHỈ HIỆN BẢNG ĐIỀU KHIỂN CHO ADMIN NAM (ROLE = 1) --- *@
+            @if (Context.Session.GetString("UserRole") == "True")
+            {
+                <li class="nav-item">
+                    <a href="@Url.Action("Index", "Dashboard")" class="nav-link">
+                        <i class="fas fa-chart-line"></i> Bảng điều khiển
+                    </a>
+                </li>
+            }
+
+            @* --- CÁC CHỨC NĂNG NHÂN VIÊN THẤY (Theo ảnh và yêu cầu bổ sung) --- *@
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Bill")" class="nav-link">
+                    <i class="fas fa-cash-register"></i> Bán hàng
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Order")" class="nav-link">
+                    <i class="fas fa-clipboard-list"></i> Quản lý đơn hàng
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Drink")" class="nav-link">
+                    <i class="fas fa-mug-hot"></i> Thực đơn đồ uống
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Shift")" class="nav-link">
+                    <i class="fas fa-calendar-alt"></i> Quản lý ca làm
+                </a>
+            </li>
+            <li class="nav-item">
+                <a href="@Url.Action("Index", "Customer")" class="nav-link">
+                    <i class="fas fa-id-card"></i> Quản lý khách hàng
+                </a>
+            </li>
+
+            @* --- CÁC MỤC QUẢN TRỊ HỆ THỐNG (CHỈ ADMIN THẤY) --- *@
+            @if (Context.Session.GetString("UserRole") == "True")
+            {
+                <div class="menu-divider">Quản lý hệ thống</div>
+
+                <li class="nav-item">
+                    <a href="@Url.Action("Index", "Category")" class="nav-link">
+                        <i class="fas fa-tags"></i> Quản lý danh mục
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="@Url.Action("Index", "User")" class="nav-link">
+                        <i class="fas fa-users"></i> Quản lý nhân viên
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="@Url.Action("Index", "Ingredient")" class="nav-link">
+                        <i class="fas fa-boxes"></i> Kho nguyên liệu
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="@Url.Action("Index", "Recipe")" class="nav-link">
+                        <i class="fas fa-book"></i> Công thức pha chế
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="@Url.Action("Index", "Report")" class="nav-link">
+                        <i class="fas fa-chart-pie"></i> Báo cáo thống kê
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="@Url.Action("Index", "Setting")" class="nav-link">
+                        <i class="fas fa-cog"></i> Cài đặt hệ thống
+                    </a>
+                </li>
+            }
+        </ul>
+
+
+        <div class="sidebar-footer">
+            <a href="/Home/Logout" class="logout-link">
+                <i class="fas fa-sign-out-alt"></i> Đăng xuất
+            </a>
+        </div>
+    </aside>
+
+    <div class="main-wrapper">
+        <main class="content-body">
+            @RenderBody()
+        </main>
+    </div>
+
+    <script src="~/lib/jquery/dist/jquery.min.js"></script>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            const path = window.location.pathname.toLowerCase();
+            document.querySelectorAll('.nav-item').forEach(item => {
+                const linkAttr = item.querySelector('.nav-link').getAttribute('href');
+                if (linkAttr) {
+                    const link = linkAttr.toLowerCase();
+                    if (path === link || (path.includes(link) && link !== "/")) {
+                        item.classList.add('active');
+                    }
+                }
+            });
+        });
+    </script>
+    @await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

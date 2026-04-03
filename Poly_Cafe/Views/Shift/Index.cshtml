@@ -1,0 +1,191 @@
+﻿@using Poly_Cafe.DTO
+@using Microsoft.AspNetCore.Http
+@inject IHttpContextAccessor HttpContextAccessor
+@model IEnumerable<ShiftDTO>
+
+@{
+    ViewData["Title"] = "Quản lý ca làm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+
+    var currentUserId = HttpContextAccessor.HttpContext.Session.GetInt32("UserId");
+    var userRoleStr = HttpContextAccessor.HttpContext.Session.GetString("UserRole");
+    bool isAdmin = (userRoleStr == "True");
+
+    var allData = Model?.ToList() ?? new List<ShiftDTO>();
+    var todayShifts = allData.Where(x => !x.EndTime.HasValue).ToList();
+    var historyShifts = allData.Where(x => x.EndTime.HasValue).OrderByDescending(x => x.EndTime).ToList();
+}
+
+<style>
+    :root { --poly-brown: #4A3933; --poly-gold: #D4A373; --poly-green: #2ecc71; }
+    .shift-container { padding: 20px; background: #fdfcfb; min-height: 100vh; }
+    .section-title { font-weight: 800; color: var(--poly-brown); border-left: 5px solid var(--poly-gold); padding-left: 15px; margin: 30px 0 20px 0; }
+    .filter-box { background: white; padding: 15px; border-radius: 12px; display: flex; gap: 10px; align-items: center; margin-bottom: 20px; border: 1px solid #eee; }
+    .form-control-poly { border-radius: 8px; border: 1px solid #ddd; padding: 8px 15px; font-size: 14px; }
+    .status-badge { padding: 5px 12px; border-radius: 20px; font-size: 11px; font-weight: 700; }
+    .badge-waiting { background: #fff9db; color: #f08c00; }
+    .badge-active { background: #e8f8f5; color: #2ecc71; }
+    .table-card { border: none; border-radius: 15px; overflow: hidden; }
+</style>
+
+<div class="shift-container">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h3 class="fw-bold">☕ QUẢN LÝ CA LÀM VIỆC</h3>
+        @if(isAdmin) {
+            <button class="btn btn-primary rounded-pill fw-bold shadow-sm" onclick="openShiftModal()">
+                <i class="fas fa-plus me-2"></i> TẠO CA DỰ PHÒNG
+            </button>
+        }
+    </div>
+
+    <div class="filter-box shadow-sm">
+        <input type="text" id="searchStaff" class="form-control-poly" style="flex: 2" placeholder="🔍 Tìm nhân viên hoặc tên ca...">
+        <input type="date" id="filterDate" class="form-control-poly" style="flex: 1">
+        <button class="btn btn-dark rounded-pill px-4" onclick="applyFilter()">LỌC DỮ LIỆU</button>
+    </div>
+
+    <h5 class="section-title">PHIÊN LÀM VIỆC HÔM NAY</h5>
+    <div class="table-card bg-white shadow-sm p-3 mb-5">
+        <table class="table align-middle">
+            <thead>
+                <tr class="text-muted small">
+                    <th>TÊN CA</th><th>NHÂN VIÊN</th><th>GIỜ VÀO</th><th>TRẠNG THÁI</th><th class="text-end">HÀNH ĐỘNG</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in todayShifts) {
+                    <tr class="shift-row">
+                        <td><b class="text-primary">@item.ShiftName</b></td>
+                        <td>@(item.StartTime == null ? "Đang trống" : item.CashierName)</td>
+                        <td>@(item.StartTime?.ToString("HH:mm") ?? "--:--")</td>
+                        <td>
+                            @if (item.StartTime == null) { <span class="status-badge badge-waiting">CHỜ NHẬN CA</span> }
+                            else { <span class="status-badge badge-active">ĐANG TRỰC</span> }
+                        </td>
+                        <td class="text-end">
+                            <div class="btn-group">
+                                @if (item.StartTime == null) {
+                                    <button class="btn btn-sm btn-success px-3 rounded-pill" onclick="handleVaoCa(@item.SessionId)">Vào ca</button>
+                                } else if (item.UserId == currentUserId || isAdmin) {
+                                    <button class="btn btn-sm btn-danger px-3 rounded-pill" onclick="handleChotCa(@item.SessionId)">Chốt ca</button>
+                                }
+                                @if (isAdmin) {
+                                    <button class="btn btn-sm text-secondary ms-2" onclick="openShiftModal(@item.SessionId, '@item.ShiftName')"><i class="fas fa-edit"></i></button>
+                                    <button class="btn btn-sm text-danger ms-1" onclick="handleDeleteShift(@item.SessionId)"><i class="fas fa-trash"></i></button>
+                                }
+                            </div>
+                        </td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+
+    <h5 class="section-title">LỊCH SỬ CA ĐÃ HOÀN TẤT</h5>
+    <div class="table-card bg-white shadow-sm p-3">
+        <table class="table table-hover align-middle">
+            <thead class="table-light">
+                <tr class="small">
+                    <th>NGÀY</th><th>NHÂN VIÊN</th><th>CA LÀM</th><th>THỜI GIAN</th><th class="text-end">DOANH THU</th>
+                </tr>
+            </thead>
+            <tbody>
+                @foreach (var item in historyShifts) {
+                    <tr class="history-row" data-date="@item.StartTime?.ToString("yyyy-MM-dd")">
+                        <td class="text-muted">@item.StartTime?.ToString("dd/MM/yyyy")</td>
+                        <td><b>@item.CashierName</b></td>
+                        <td>@item.ShiftName</td>
+                        <td>@item.StartTime?.ToString("HH:mm") - @item.EndTime?.ToString("HH:mm")</td>
+                        <td class="text-end text-success fw-bold">@item.TotalSales.ToString("N0")đ</td>
+                    </tr>
+                }
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="modal fade" id="shiftModal" tabindex="-1">
+    <div class="modal-dialog modal-dialog-centered">
+        <div class="modal-content" style="border-radius: 15px; border: none;">
+            <div class="modal-header border-0 pb-0">
+                <h5 class="modal-title fw-bold" id="modalTitle">THÔNG TIN CA LÀM</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
+                <div class="mb-3">
+                    <label class="small fw-bold text-muted mb-1">Tên ca làm việc</label>
+                    <input type="text" id="modalShiftName" class="form-control rounded-pill px-3" placeholder="VD: Ca Sáng, Ca Tối...">
+                    <input type="hidden" id="modalShiftId">
+                </div>
+            </div>
+            <div class="modal-footer border-0 pt-0">
+                <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+                <button type="button" class="btn btn-primary rounded-pill px-4" onclick="saveShiftData()">Lưu lại</button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    // Mở Modal (Dùng chung cho Thêm và Sửa)
+    function openShiftModal(id = null, name = '') {
+        $('#modalShiftId').val(id);
+        $('#modalShiftName').val(name);
+        $('#modalTitle').text(id ? "CẬP NHẬT TÊN CA" : "TẠO CA LÀM MỚI");
+        $('#shiftModal').modal('show');
+    }
+
+    // Lưu dữ liệu từ Modal
+    function saveShiftData() {
+        const id = $('#modalShiftId').val();
+        const name = $('#modalShiftName').val();
+        if (!name) { alert("Vui lòng nhập tên ca!"); return; }
+
+        let url = id ? '/Shift/UpdateShiftName' : '/Shift/CreateManualShift';
+        let data = id ? { id: id, name: name } : { name: name };
+
+        $.post(url, data, function(res) {
+            if(res.success) location.reload();
+            else alert("Có lỗi xảy ra, vui lòng thử lại!");
+        });
+    }
+
+    function handleDeleteShift(id) {
+        if (confirm("Xác nhận xóa ca làm việc này?")) {
+            $.post('/Shift/DeleteShift', { id: id }, (res) => location.reload());
+        }
+    }
+
+    function handleVaoCa(id) {
+        if (confirm("Bắt đầu nhận ca trực?")) {
+            $.post('/Shift/StartNewShift', { sessionId: id }, (res) => location.reload());
+        }
+    }
+
+    function handleChotCa(id) {
+        if (confirm("Xác nhận chốt ca làm việc?")) {
+            $.post('/Shift/EndShift', { sessionId: id }, (res) => {
+                if (res.success) {
+                    alert("Chốt ca thành công! Doanh thu: " + res.totalSales.toLocaleString() + "đ");
+                    location.reload();
+                }
+            });
+        }
+    }
+
+    // Tìm kiếm và Lọc ngày
+    document.getElementById('searchStaff').addEventListener('input', function() {
+        let val = this.value.toLowerCase();
+        $(".shift-row, .history-row").each(function() {
+            $(this).toggle($(this).text().toLowerCase().includes(val));
+        });
+    });
+
+    function applyFilter() {
+        let dateVal = document.getElementById('filterDate').value;
+        $(".history-row").each(function() {
+            if (!dateVal) $(this).show();
+            else $(this).toggle($(this).data('date') === dateVal);
+        });
+    }
+</script>

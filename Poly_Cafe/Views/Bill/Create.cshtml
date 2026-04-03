@@ -1,0 +1,273 @@
+﻿@using Poly_Cafe.DTO
+@model IEnumerable<DrinkDTO>
+@{
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var categories = ViewBag.Categories as System.Data.DataTable;
+    var cart = ViewBag.Cart as List<CartItemDTO> ?? new List<CartItemDTO>();
+}
+
+<style>
+    :root {
+        --latte-bg: #fdf6ec;
+        --latte-brown: #4b3832;
+        --latte-accent: #f0c987;
+        --latte-card: #ffffff;
+    }
+
+    .pos-wrapper {
+        display: flex;
+        height: calc(100vh - 65px);
+        background-color: var(--latte-bg);
+        margin: -20px;
+        overflow: hidden;
+    }
+
+    /* Section bên trái: Menu */
+    .menu-section {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        padding: 20px;
+        gap: 15px;
+    }
+
+    .search-group {
+        background: white;
+        border-radius: 12px;
+        padding: 10px 15px;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.05);
+    }
+
+    .category-bar {
+        display: flex;
+        gap: 10px;
+        overflow-x: auto;
+        padding-bottom: 5px;
+    }
+
+    .cat-item {
+        padding: 8px 18px;
+        background: white;
+        border-radius: 10px;
+        cursor: pointer;
+        white-space: nowrap;
+        font-weight: 500;
+        transition: 0.2s;
+    }
+
+        .cat-item.active {
+            background: var(--latte-brown);
+            color: white;
+        }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+        gap: 15px;
+        overflow-y: auto;
+    }
+
+    .item-card {
+        background: white;
+        border-radius: 15px;
+        padding: 15px;
+        text-align: center;
+        cursor: pointer;
+        border: 1px solid transparent;
+    }
+
+        .item-card:hover {
+            border-color: var(--latte-accent);
+            transform: translateY(-3px);
+        }
+
+        .item-card img {
+            width: 55px;
+            height: 55px;
+            object-fit: contain;
+            margin-bottom: 10px;
+        }
+
+    /* Section bên phải: Giỏ hàng */
+    .cart-section {
+        width: 360px;
+        background: white;
+        padding: 25px;
+        display: flex;
+        flex-direction: column;
+        box-shadow: -5px 0 15px rgba(0,0,0,0.03);
+    }
+
+    .cart-list {
+        flex: 1;
+        overflow-y: auto;
+        margin: 15px 0;
+    }
+
+    .cart-item-row {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 1px solid #f8f8f8;
+    }
+
+    .checkout-area {
+        border-top: 1px solid #eee;
+        padding-top: 15px;
+    }
+
+    .price-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 5px;
+        font-size: 0.9rem;
+    }
+
+    .btn-pay {
+        width: 100%;
+        padding: 12px;
+        border: none;
+        border-radius: 10px;
+        font-weight: bold;
+        margin-top: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 8px;
+    }
+</style>
+
+<div class="pos-wrapper">
+    <div class="menu-section">
+        <div class="search-group">
+            <input type="text" id="txtSearch" class="form-control border-0" placeholder="Search products...">
+        </div>
+
+        <div class="category-bar">
+            <div class="cat-item active" onclick="loadByCategory(0, this)">All</div>
+            @if (categories != null)
+            {
+                @foreach (System.Data.DataRow row in categories.Rows)
+                {
+                    <div class="cat-item" onclick="loadByCategory(@row["id"], this)">@row["name"]</div>
+                }
+            }
+        </div>
+
+        <div class="product-grid" id="productGrid">
+            @foreach (var item in Model)
+            {
+                <div class="item-card" onclick="addToCart(@item.Id)">
+                    <img src="/image/@item.Image" onerror="this.src='/image/default.png'">
+                    <div class="fw-bold small">@item.Name</div>
+                    <div class="text-muted small">@item.Price.ToString("N0")đ</div>
+                    <div style="color:var(--latte-accent); font-size:0.7rem;"><i class="fas fa-star"></i> 450 pts</div>
+                </div>
+            }
+        </div>
+    </div>
+
+    <div class="cart-section">
+        <h5 class="fw-bold">Current Order</h5>
+        <div class="cart-list" id="cartContainer">
+            @Html.Partial("_CartPartial", cart)
+        </div>
+
+        <div class="checkout-area">
+            <div class="price-row text-muted"><span>Subtotal:</span><span id="lblSubtotal">@ViewBag.Subtotal.ToString("N0")đ</span></div>
+            <div class="price-row text-muted"><span>Tax (8%):</span><span id="lblTax">@ViewBag.Tax.ToString("N0")đ</span></div>
+            <div class="price-row fw-bold h5 mt-2"><span>Total:</span><span id="lblTotal">@ViewBag.Total.ToString("N0")đ</span></div>
+
+            <button class="btn-pay" style="background:#d7ccc8;" onclick="checkout('Card')">
+                <i class="far fa-credit-card"></i> Pay with Card
+            </button>
+            <button class="btn-pay" style="background:#bcaaa4;" onclick="checkout('Cash')">
+                <i class="fas fa-money-bill-wave"></i> Pay with Cash
+            </button>
+        </div>
+    </div>
+</div>
+
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script>
+    // 1. Thêm sản phẩm (Dùng Ajax gọi hàm AddToCart trong Controller)
+    function addToCart(id) {
+        $.post('/Bill/AddToCart', { drinkId: id, quantity: 1 }, function (res) {
+            if (res.success) {
+                refreshCart();
+            }
+        });
+    }
+
+    // 2. Cập nhật số lượng
+    function updateQty(id, qty) {
+        $.post('/Bill/UpdateCart', { drinkId: id, quantity: qty }, function () {
+            refreshCart();
+        });
+    }
+
+    // 3. Tải lại giỏ hàng và tổng tiền
+    function refreshCart() {
+        $.get('/Bill/GetCart', function (data) {
+            let html = data.length ? '' : '<div class="text-center mt-5"><p>Cart is empty</p></div>';
+            data.forEach(item => {
+                html += `<div class="cart-item-row">
+                            <div style="flex:1">
+                                <div class="fw-bold small">${item.drinkName}</div>
+                                <div class="text-muted small">${item.price.toLocaleString()}đ</div>
+                            </div>
+                            <div class="d-flex align-items-center gap-2">
+                                <button class="btn btn-sm btn-light border" onclick="updateQty(${item.drinkId}, ${item.quantity - 1})">-</button>
+                                <span class="small fw-bold">${item.quantity}</span>
+                                <button class="btn btn-sm btn-light border" onclick="updateQty(${item.drinkId}, ${item.quantity + 1})">+</button>
+                            </div>
+                        </div>`;
+            });
+            $('#cartContainer').html(html);
+        });
+
+        $.get('/Bill/GetCartTotals', function (res) {
+            $('#lblSubtotal').text(res.subtotal.toLocaleString() + 'đ');
+            $('#lblTax').text(res.tax.toLocaleString() + 'đ');
+            $('#lblTotal').text(res.total.toLocaleString() + 'đ');
+        });
+    }
+
+    // 4. Thanh toán
+    function checkout(method) {
+        if (confirm(`Xác nhận thanh toán bằng ${method}?`)) {
+            $.post('/Bill/Checkout', { paymentMethod: method }, function (res) {
+                if (res.success) {
+                    alert("Thanh toán thành công!");
+                    location.reload();
+                } else {
+                    alert(res.message);
+                }
+            });
+        }
+    }
+
+    // 5. Lọc theo danh mục
+    function loadByCategory(catId, el) {
+        $('.cat-item').removeClass('active');
+        $(el).addClass('active');
+
+        const url = catId === 0 ? '/Bill/Pos' : `/Bill/GetDrinksByCategory?categoryId=${catId}`;
+
+        if(catId === 0) { location.reload(); return; }
+
+        $.get(url, function (data) {
+            let html = '';
+            data.forEach(item => {
+                html += `<div class="item-card" onclick="addToCart(${item.id})">
+                            <img src="/image/${item.image || 'default.png'}">
+                            <div class="fw-bold small">${item.name}</div>
+                            <div class="text-muted small">${item.price.toLocaleString()}đ</div>
+                        </div>`;
+            });
+            $('#productGrid').html(html);
+        });
+    }
+</script>
