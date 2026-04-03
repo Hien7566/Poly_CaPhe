@@ -106,7 +106,7 @@ namespace Poly_Cafe.Controllers
                 bool res = _shiftBll.DeleteShift(id);
                 return Json(new { success = res });
             }
-            catch
+            catch 
             {
                 return Json(new { success = false, message = "Ca này đã có dữ liệu lịch sử, không thể xóa!" });
             }

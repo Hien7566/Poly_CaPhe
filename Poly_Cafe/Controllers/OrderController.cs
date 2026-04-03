@@ -79,7 +79,7 @@ namespace Poly_Cafe.Controllers
             return Json(new { success = result != null, orderCode = result });
         }
 
-        public class OrderRequest
+        public class OrderRequest 
         {
             public string PaymentMethod { get; set; }
             public int Total { get; set; }

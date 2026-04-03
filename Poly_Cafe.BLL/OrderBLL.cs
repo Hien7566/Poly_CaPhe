@@ -19,7 +19,7 @@ namespace Poly_Cafe.BLL
         public bool CancelOrder(int id) => dal.UpdateStatus(id, "-1");
 
         // 4. Tạo đơn hàng mới từ trang POS
-        // THÊM THAM SỐ int userId VÀO ĐÂY
+        // THÊM THAM SỐ int userId VÀO ĐÂY 
         public string CreateOrder(int userId, string code, int total, string paymentMethod, List<OrderDetailDTO> details)
         {
             if (details == null || details.Count == 0) return null;
